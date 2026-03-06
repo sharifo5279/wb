@@ -1,0 +1,35 @@
+/*
+ * EDI Workbench — Design tokens (Task 5)
+ *
+ * Scoped to .wb-shell so that --wb-* tokens do NOT leak into the
+ * parent portal's styles.  Every component under app/edi-workbench/
+ * inherits these variables because they are all descendants of .wb-shell.
+ *
+ * Font tokens (--wb-font-ui / --wb-font-mono) are defined here as static
+ * fallbacks; the self-hosted next/font classes in layout.tsx override them
+ * with optimised, locally-served font-families at runtime.
+ */
+
+.wb-shell {
+  /* ── Core palette ───────────────────────────────────────────────────────── */
+  --wb-bg-primary:      #0f1117;
+  --wb-bg-surface:      #161b27;
+  --wb-bg-elevated:     #1e2535;
+  --wb-border:          #2a3347;
+  --wb-text-primary:    #e2e8f0;
+  --wb-text-secondary:  #8892a4;
+  --wb-accent:          #6366f1;
+  --wb-font-ui:         'Inter', sans-serif;
+  --wb-font-mono:       'JetBrains Mono', monospace;
+
+  /* ── Derived tokens ─────────────────────────────────────────────────────── */
+  --wb-text-muted:      #55637a;
+  --wb-border-sub:      #1e2535;
+  --wb-accent-dim:      #1e1f4a;
+  --wb-accent-glow:     rgba(99, 102, 241, 0.18);
+
+  /* ── Backward-compatible aliases (referenced by Tasks 2–4 CSS) ────────── */
+  --wb-bg-base:         var(--wb-bg-primary);
+  --wb-accent-text:     #a5b4fc;
+  --wb-accent-tint:     rgba(99, 102, 241, 0.06);
+}

@@ -1,0 +1,1570 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Reset ─────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ─── Full-viewport shell ────────────────────────────────────────────────── */
+/* The body is the outer flex container for the three-band layout:
+   [portal nav] → [wb-tabbar] → [wb-workspace]
+   All bands are flex children; overflow is locked here so no outer scrollbar. */
+html,
+body {
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ─── Portal nav bar ─────────────────────────────────────────────────────── */
+/* Structural styles only — design tokens will be applied in Task 5. */
+.portal-nav {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 24px;
+  flex-shrink: 0;
+  background-color: #1b2a4a; /* placeholder — Task 5 will replace */
+  color: #ffffff;
+}
+
+.portal-nav__brand {
+  margin-right: 32px;
+  white-space: nowrap;
+}
+
+.portal-nav__brand-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.portal-nav__nav {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.portal-nav__list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 2px;
+}
+
+.portal-nav__item {
+  display: flex;
+}
+
+.portal-nav__link {
+  display: flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+  transition: color 0.12s ease, background-color 0.12s ease;
+}
+
+.portal-nav__link:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Active state — set via aria-current="page" and the --active modifier class */
+.portal-nav__link--active,
+.portal-nav__link[aria-current='page'] {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+/* ─── Workbench design tokens ────────────────────────────────────────────── */
+/* Authoritative token definitions live in app/edi-workbench/workbench.css,
+   scoped to .wb-shell.  Do NOT redefine --wb-* tokens here.               */
+
+/* ─── Workbench tab bar ──────────────────────────────────────────────────── */
+.wb-tabbar {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 42px;
+  flex-shrink: 0;
+  background-color: var(--wb-bg-base);
+  border-bottom: 1px solid var(--wb-border);
+  padding: 0 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.wb-tabbar::-webkit-scrollbar { display: none; }
+
+/* ─── Individual tab button ──────────────────────────────────────────────── */
+.wb-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 14px;
+  height: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--wb-text-secondary);
+  transition: color 0.12s ease, background-color 0.12s ease;
+}
+
+.wb-tab:hover {
+  color: var(--wb-text-primary);
+  background-color: var(--wb-bg-elevated);
+}
+
+.wb-tab--active {
+  color: var(--wb-accent-text);
+  background-color: var(--wb-accent-tint);
+  border-bottom-color: var(--wb-accent);
+}
+.wb-tab--active:hover {
+  color: var(--wb-accent-text);
+  background-color: var(--wb-accent-tint);
+}
+
+/* ─── Tab icon (Lucide via CSS mask-image) ───────────────────────────────── */
+.wb-tab__icon {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  background: currentColor;
+  -webkit-mask-image: var(--icon-url);
+          mask-image: var(--icon-url);
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+}
+
+/* ─── "Soon" badge ───────────────────────────────────────────────────────── */
+.wb-tab__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+  background-color: rgba(99, 102, 241, 0.15);
+  color: var(--wb-accent-text);
+}
+
+/* ─── Workspace panel ────────────────────────────────────────────────────── */
+.wb-workspace {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--wb-bg-base);
+}
+
+/* ─── Coming soon fills the flex workspace ───────────────────────────────── */
+
+/* ─── "Coming soon" placeholder ──────────────────────────────────────────── */
+.wb-coming-soon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 8px;
+  text-align: center;
+  padding: 24px;
+}
+
+.wb-coming-soon__heading {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--wb-text-primary);
+}
+
+.wb-coming-soon__sub {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--wb-text-secondary);
+  max-width: 340px;
+}
+
+/* ─── Document Studio empty state ────────────────────────────────────────── */
+@keyframes ds-fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ds-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  animation: ds-fadeIn 0.4s ease both;
+}
+
+.ds-empty__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* ── 72×72 icon container with gradient overlay ── */
+.ds-empty__icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: rgba(99, 102, 241, 0.12);
+  margin-bottom: 4px;
+}
+
+.ds-empty__icon-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.18) 0%,
+    rgba(99, 102, 241, 0) 60%
+  );
+  pointer-events: none;
+}
+
+.ds-empty__icon {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  background: var(--wb-accent-text);
+  -webkit-mask-image: var(--icon-url);
+          mask-image: var(--icon-url);
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+}
+
+/* ── Typography ── */
+.ds-empty__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--wb-text-primary);
+}
+
+.ds-empty__subtitle {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--wb-text-secondary);
+  max-width: 380px;
+  text-align: center;
+  line-height: 1.55;
+}
+
+/* ── Action buttons row ── */
+.ds-empty__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+  white-space: nowrap;
+}
+
+.ds-btn__icon {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  background: currentColor;
+  -webkit-mask-image: var(--icon-url);
+          mask-image: var(--icon-url);
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+}
+
+.ds-btn--primary {
+  background-color: var(--wb-accent);
+  color: #ffffff;
+  border: 1px solid var(--wb-accent);
+}
+.ds-btn--primary:hover {
+  background-color: #4f46e5;
+  border-color: #4f46e5;
+}
+
+.ds-btn--ghost {
+  background-color: transparent;
+  color: var(--wb-text-secondary);
+  border: 1px solid var(--wb-border);
+}
+.ds-btn--ghost:hover {
+  background-color: var(--wb-bg-elevated);
+  color: var(--wb-text-primary);
+}
+
+/* ─── Document Studio panel wrapper ─────────────────────────────────────── */
+/* Fills the workspace and stacks empty-state + stack strip vertically. */
+.ds-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ─── Stack confirmation strip ───────────────────────────────────────────── */
+.ds-stack-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--wb-border-sub);
+}
+
+.ds-stack-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--wb-bg-surface);
+  border: 1px solid var(--wb-border);
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--wb-text-secondary);
+  white-space: nowrap;
+}
+
+.ds-stack-pill__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ─── Document Studio: 3-panel layout ───────────────────────────────────── */
+
+/* Root flex column — fills the wb-workspace flex child */
+.ds-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Toolbar ──────────────────────────────────────────────────────────────── */
+.ds-toolbar {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 10px;
+  flex-shrink: 0;
+  background-color: var(--wb-bg-surface);
+  border-bottom: 1px solid var(--wb-border);
+  gap: 3px;
+}
+
+.ds-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Vertical rule between groups */
+.ds-toolbar__sep {
+  display: inline-block;
+  width: 1px;
+  height: 18px;
+  background: var(--wb-border);
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+/* Base toolbar button */
+.ds-toolbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  height: 28px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--wb-text-secondary);
+  font-family: var(--wb-font-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.1s ease, color 0.1s ease, border-color 0.1s ease;
+}
+.ds-toolbar__btn:hover {
+  background: var(--wb-bg-elevated);
+  color: var(--wb-text-primary);
+}
+.ds-toolbar__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.ds-toolbar__btn:disabled:hover {
+  background: transparent;
+  color: var(--wb-text-secondary);
+}
+/* Active state — e.g. AI panel toggle when panel is open */
+.ds-toolbar__btn--active {
+  background: var(--wb-accent-tint);
+  color: var(--wb-accent-text);
+  border-color: var(--wb-accent-glow);
+}
+.ds-toolbar__btn--active:hover {
+  background: rgba(99, 102, 241, 0.10);
+  color: var(--wb-accent-text);
+}
+
+/* Toolbar icon — same mask-image technique as .wb-tab__icon */
+.ds-toolbar__icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  background: currentColor;
+  -webkit-mask-image: var(--icon-url);
+          mask-image: var(--icon-url);
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+}
+
+/* Standard badge — monospace pill showing X12 / EDIFACT / Unknown */
+.ds-toolbar__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-family: var(--wb-font-mono);
+  flex-shrink: 0;
+  margin: 0 2px;
+}
+.ds-toolbar__badge--x12 {
+  background: rgba(99, 102, 241, 0.14);
+  color: var(--wb-accent-text);
+}
+.ds-toolbar__badge--edifact {
+  background: rgba(52, 201, 122, 0.12);
+  color: #6ee7b7;
+}
+.ds-toolbar__badge--unknown {
+  background: rgba(245, 166, 35, 0.12);
+  color: #fbbf24;
+}
+
+/* Convert <select> dropdown */
+.ds-toolbar__select {
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 5px;
+  border: 1px solid var(--wb-border);
+  background: var(--wb-bg-elevated);
+  color: var(--wb-text-secondary);
+  font-family: var(--wb-font-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.1s ease, color 0.1s ease;
+}
+.ds-toolbar__select:hover:not(:disabled) {
+  border-color: rgba(99, 102, 241, 0.5);
+  color: var(--wb-text-primary);
+}
+.ds-toolbar__select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.ds-toolbar__select option {
+  background: var(--wb-bg-surface);
+  color: var(--wb-text-primary);
+}
+
+/* ── Panel row ────────────────────────────────────────────────────────────── */
+.ds-panels {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+/* ── Shared panel anatomy ─────────────────────────────────────────────────── */
+.ds-panel-tree,
+.ds-panel-editor,
+.ds-panel-ai {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Panel header bar */
+.ds-panel__header {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 10px;
+  flex-shrink: 0;
+  background: var(--wb-bg-surface);
+  border-bottom: 1px solid var(--wb-border);
+  gap: 6px;
+}
+
+.ds-panel__title {
+  flex: 1;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wb-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Panel header icon button (collapse / expand / close) */
+.ds-panel__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--wb-text-muted);
+  cursor: pointer;
+  transition: background-color 0.1s ease, color 0.1s ease;
+}
+.ds-panel__btn:hover {
+  background: var(--wb-bg-elevated);
+  color: var(--wb-text-secondary);
+}
+.ds-panel__btn-icon {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  background: currentColor;
+  -webkit-mask-image: var(--icon-url);
+          mask-image: var(--icon-url);
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+}
+
+/* Panel scrollable body */
+.ds-panel__body {
+  flex: 1;
+  overflow: auto;
+  background: var(--wb-bg-base);
+}
+
+/* ── Left panel: Segment Tree ─────────────────────────────────────────────── */
+.ds-panel-tree {
+  width: 25%;
+  min-width: 200px;
+  max-width: 340px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--wb-border);
+  transition: width 0.22s ease, min-width 0.22s ease;
+}
+
+/* Collapsed: shrink to icon-strip width */
+.ds-panel-tree--collapsed {
+  width: 32px;
+  min-width: 32px;
+}
+.ds-panel-tree--collapsed .ds-panel__title,
+.ds-panel-tree--collapsed .ds-panel__body {
+  display: none;
+}
+.ds-panel-tree--collapsed .ds-panel__header {
+  padding: 0;
+  justify-content: center;
+}
+
+/* ── Center panel: Editor ─────────────────────────────────────────────────── */
+.ds-panel-editor {
+  flex: 1;
+  min-width: 0; /* prevent flex overflow */
+}
+
+/* Editor-level status bar (Ln / Col / segments / errors) */
+.ds-editor-statusbar {
+  display: flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 12px;
+  flex-shrink: 0;
+  background: var(--wb-bg-surface);
+  border-top: 1px solid var(--wb-border);
+  font-family: var(--wb-font-mono);
+  font-size: 11px;
+  color: var(--wb-text-muted);
+}
+.ds-editor-statusbar__sep {
+  margin: 0 8px;
+  opacity: 0.35;
+}
+
+/* Empty editor placeholder (shown until Task 4 mounts the real editor) */
+.ds-editor-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12.5px;
+  color: var(--wb-text-muted);
+  font-family: var(--wb-font-mono);
+  user-select: none;
+}
+
+/* ── Right panel: Aviator AI ──────────────────────────────────────────────── */
+.ds-panel-ai {
+  width: 25%;
+  min-width: 220px;
+  max-width: 360px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--wb-border);
+  transition: width 0.25s ease, min-width 0.25s ease;
+  overflow: hidden;
+}
+.ds-panel-ai--closed {
+  width: 0;
+  min-width: 0;
+  border-left: none;
+}
+
+/* ─── Segment Tree ───────────────────────────────────────────────────────── */
+
+/* Scrollable container inside .ds-panel__body */
+.ds-tree {
+  padding: 4px 0;
+  user-select: none;
+}
+
+/* ── Tree node row (single <button> per segment) ── */
+.ds-tree-node {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  min-height: 26px;
+  /* padding-left is set inline as depth * 18 + 8 */
+  padding-top: 3px;
+  padding-bottom: 3px;
+  padding-right: 10px;
+  border: none;
+  border-left: 2px solid transparent;
+  background: transparent;
+  color: var(--wb-text-secondary);
+  font-family: var(--wb-font-mono);
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background-color 0.08s ease, color 0.08s ease;
+}
+.ds-tree-node:hover {
+  background: var(--wb-bg-elevated);
+  color: var(--wb-text-primary);
+}
+.ds-tree-node--active {
+  background: var(--wb-accent-dim);
+  color: var(--wb-accent-text);
+  border-left-color: var(--wb-accent);
+}
+.ds-tree-node--active:hover {
+  background: var(--wb-accent-dim);
+  color: var(--wb-accent-text);
+}
+
+/* ── Chevron (collapse/expand indicator, loop nodes only) ── */
+.ds-tree-chevron {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  background: currentColor;
+  opacity: 0.55;
+  -webkit-mask-image: var(--icon-url);
+          mask-image: var(--icon-url);
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+}
+
+/* Same width as chevron but invisible — keeps non-loop rows aligned */
+.ds-tree-chevron-placeholder {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+/* ── Segment type colour dot ── */
+.ds-tree-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Segment ID label ── */
+.ds-tree-id {
+  font-weight: 600;
+  font-size: 11.5px;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+/* ── Descriptor name (truncates if panel is narrow) ── */
+.ds-tree-desc {
+  font-size: 11px;
+  color: var(--wb-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.ds-tree-node:hover .ds-tree-desc,
+.ds-tree-node--active .ds-tree-desc {
+  color: inherit;
+  opacity: 0.7;
+}
+
+/* ── Error indicator — red dot with soft glow ── */
+.ds-tree-error-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #ef4444;
+  box-shadow: 0 0 5px rgba(239, 68, 68, 0.55);
+  margin-left: auto;
+}
+
+/* ── Error count badge in panel header ── */
+.ds-panel__error-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  flex-shrink: 0;
+}
+
+/* ── Empty state shown when no document is loaded ── */
+.ds-tree-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  text-align: center;
+  gap: 8px;
+}
+.ds-tree-empty__icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  background: var(--wb-text-muted);
+  opacity: 0.35;
+  -webkit-mask-image: var(--icon-url);
+          mask-image: var(--icon-url);
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+}
+.ds-tree-empty__text {
+  font-size: 12px;
+  color: var(--wb-text-muted);
+  line-height: 1.55;
+  max-width: 180px;
+}
+
+/* ─── Status bar ─────────────────────────────────────────────────────────── */
+.wb-statusbar {
+  display: flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 12px;
+  flex-shrink: 0;
+  background: var(--wb-bg-surface);
+  border-top: 1px solid var(--wb-border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--wb-text-muted);
+}
+
+.wb-statusbar__sep {
+  margin: 0 8px;
+  opacity: 0.35;
+}
+
+.wb-statusbar__ready {
+  margin-left: auto;
+  color: #34c97a;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Task 4 — EDI Editor
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Outer editor shell ─────────────────────────────────────────────────── */
+.ds-edi-editor {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--wb-bg-primary);
+  font-family: var(--wb-font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ─── Scrollable display layer ───────────────────────────────────────────── */
+.ds-edi-editor__scroller {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  padding: 6px 0 24px;
+  cursor: text;
+}
+
+/* ─── Hidden textarea overlay ────────────────────────────────────────────── */
+.ds-edi-editor__textarea {
+  position: absolute;
+  /* Place it offscreen so it's reachable by assistive tech but invisible */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  resize: none;
+  border: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  font-family: var(--wb-font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow: hidden;
+  color: transparent;
+  background: transparent;
+  caret-color: transparent;
+  /* Pointer events: let clicks fall through to display layer by default;
+     focus is gained programmatically via .focus() calls */
+  pointer-events: none;
+}
+
+/* When the editor has focus we enable pointer events on the textarea */
+.ds-edi-editor:focus-within .ds-edi-editor__textarea {
+  pointer-events: auto;
+  opacity: 0;
+}
+
+/* ─── Individual line row ────────────────────────────────────────────────── */
+.ds-editor-line {
+  display: flex;
+  align-items: baseline;
+  min-height: 22px;
+  padding: 1px 16px 1px 0;
+  white-space: pre;
+  cursor: text;
+  transition: background 80ms ease;
+}
+
+.ds-editor-line:hover {
+  background: var(--wb-bg-surface);
+}
+
+.ds-editor-line--active {
+  background: var(--wb-accent-dim) !important;
+  border-left: 2px solid var(--wb-accent);
+}
+
+.ds-editor-line--error {
+  background: rgba(239, 68, 68, 0.06);
+}
+
+.ds-editor-line--active.ds-editor-line--error {
+  background: rgba(99, 102, 241, 0.14) !important;
+}
+
+/* ─── Gutter (line numbers) ──────────────────────────────────────────────── */
+.ds-editor-gutter {
+  display: inline-block;
+  min-width: 44px;
+  padding-right: 16px;
+  text-align: right;
+  color: var(--wb-text-muted);
+  user-select: none;
+  flex-shrink: 0;
+  font-size: 11px;
+  opacity: 0.55;
+}
+
+/* ─── Line content area ──────────────────────────────────────────────────── */
+.ds-editor-content {
+  flex: 1;
+  overflow: hidden;
+  white-space: pre;
+}
+
+/* ─── Token styles ───────────────────────────────────────────────────────── */
+.ds-editor-token {
+  /* individual colour set via inline style */
+}
+
+/* Red squiggle underline on error tokens */
+.ds-editor-token--error-underline {
+  text-decoration: underline wavy #ef4444;
+  text-decoration-skip-ink: none;
+  text-underline-offset: 2px;
+}
+
+/* ─── Error tooltip anchor ───────────────────────────────────────────────── */
+.ds-error-anchor {
+  position: relative;
+  display: inline;
+}
+
+/* ─── Error tooltip popup ────────────────────────────────────────────────── */
+.ds-error-tooltip {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  z-index: 200;
+  min-width: 200px;
+  max-width: 360px;
+  background: #1a0a0a;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  border-radius: 6px;
+  padding: 6px 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  white-space: normal;
+  font-family: var(--wb-font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.ds-error-tooltip__msg {
+  color: #fca5a5;
+  padding: 2px 0;
+}
+
+.ds-error-tooltip__msg + .ds-error-tooltip__msg {
+  border-top: 1px solid rgba(239, 68, 68, 0.2);
+  margin-top: 2px;
+  padding-top: 4px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Task 6 — File Upload & Clear
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Hidden file input ──────────────────────────────────────────────────── */
+.ds-toolbar__file-input {
+  display: none;
+}
+
+/* ─── Small icon variant (used in error banner) ──────────────────────────── */
+.ds-toolbar__icon--sm {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ─── Upload error banner ────────────────────────────────────────────────── */
+/* Absolutely positioned just below the 40px toolbar strip so it overlays   */
+/* the panels without affecting the layout.                                  */
+.ds-toolbar__upload-error {
+  position: absolute;
+  top: 100%;          /* flush with bottom of .ds-toolbar */
+  left: 0;
+  right: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  background: #1c0a0a;
+  border-bottom: 1px solid rgba(239, 68, 68, 0.45);
+  color: #fca5a5;
+  font-family: var(--wb-font-mono);
+  font-size: 12px;
+  /* Subtle slide-in */
+  animation: ds-error-slide-in 120ms ease;
+}
+
+@keyframes ds-error-slide-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ds-toolbar__upload-error__msg {
+  flex: 1;
+}
+
+/* ─── Error dismiss button ───────────────────────────────────────────────── */
+.ds-toolbar__error-dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: #fca5a5;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 100ms ease;
+}
+
+.ds-toolbar__error-dismiss:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+/* Ensure the toolbar has position:relative so the absolute error banner is
+   anchored to it (not to the nearest positioned ancestor in the layout). */
+.ds-toolbar {
+  position: relative;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Task 7 — Conversion Modal
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Overlay ────────────────────────────────────────────────────────────────── */
+.cm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: cm-fade-in 150ms ease;
+}
+
+@keyframes cm-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─── Modal container ───────────────────────────────────────────────────────── */
+.cm-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(760px, calc(100vw - 48px));
+  height: min(80vh, 680px);
+  background: var(--wb-bg-surface);
+  border: 1px solid var(--wb-border);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+  animation: cm-slide-up 150ms ease;
+}
+
+@keyframes cm-slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Header ────────────────────────────────────────────────────────────────── */
+.cm-modal__header {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 14px;
+  gap: 12px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--wb-border);
+  background: var(--wb-bg-elevated);
+}
+
+.cm-modal__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wb-text-primary);
+  flex-shrink: 0;
+}
+
+/* ─── Format tabs ───────────────────────────────────────────────────────────── */
+.cm-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--wb-bg-base);
+  border: 1px solid var(--wb-border);
+  border-radius: 5px;
+  padding: 2px;
+}
+
+.cm-tab {
+  padding: 3px 14px;
+  border-radius: 3px;
+  border: none;
+  background: transparent;
+  font-family: var(--wb-font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--wb-text-muted);
+  cursor: pointer;
+  transition: background-color 0.1s ease, color 0.1s ease;
+}
+.cm-tab:hover {
+  color: var(--wb-text-secondary);
+}
+.cm-tab--active {
+  background: var(--wb-accent);
+  color: #ffffff;
+}
+.cm-tab--active:hover {
+  background: var(--wb-accent);
+  color: #ffffff;
+}
+
+/* ─── Close button ──────────────────────────────────────────────────────────── */
+.cm-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-left: auto;   /* push to far right */
+  border-radius: 5px;
+  border: none;
+  background: transparent;
+  color: var(--wb-text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.1s ease, color 0.1s ease;
+}
+.cm-modal__close:hover {
+  background: var(--wb-bg-surface);
+  color: var(--wb-text-secondary);
+}
+.cm-modal__close-icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  -webkit-mask-image: var(--icon-url);
+          mask-image: var(--icon-url);
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+}
+
+/* ─── Code body ─────────────────────────────────────────────────────────────── */
+.cm-modal__body {
+  flex: 1;
+  overflow: auto;
+  background: var(--wb-bg-primary);
+}
+
+.cm-code-block {
+  display: block;
+  margin: 0;
+  padding: 16px 20px;
+  font-family: var(--wb-font-mono);
+  font-size: 12.5px;
+  line-height: 1.75;
+  white-space: pre;
+  width: max-content;   /* allows horizontal scroll */
+  min-width: 100%;
+  background: transparent;
+  color: var(--wb-text-primary);
+}
+
+/* ─── Footer ────────────────────────────────────────────────────────────────── */
+.cm-modal__footer {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 14px;
+  gap: 8px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--wb-border);
+  background: var(--wb-bg-elevated);
+}
+
+.cm-modal__line-count {
+  font-family: var(--wb-font-mono);
+  font-size: 11px;
+  color: var(--wb-text-muted);
+  flex: 1;
+}
+
+.cm-modal__actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* ─── Action buttons ────────────────────────────────────────────────────────── */
+.cm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  height: 28px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  font-family: var(--wb-font-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.1s ease, color 0.1s ease, border-color 0.1s ease;
+}
+
+.cm-btn__icon {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  background: currentColor;
+  -webkit-mask-image: var(--icon-url);
+          mask-image: var(--icon-url);
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+}
+
+.cm-btn--ghost {
+  background: transparent;
+  color: var(--wb-text-secondary);
+  border-color: var(--wb-border);
+}
+.cm-btn--ghost:hover {
+  background: var(--wb-bg-base);
+  color: var(--wb-text-primary);
+}
+
+.cm-btn--primary {
+  background: var(--wb-accent);
+  color: #ffffff;
+  border-color: var(--wb-accent);
+}
+.cm-btn--primary:hover {
+  background: #4f46e5;
+  border-color: #4f46e5;
+}
+
+/* Shown for 2 s after a successful clipboard copy */
+.cm-btn--success {
+  background: rgba(52, 201, 122, 0.15);
+  color: #34c97a;
+  border-color: rgba(52, 201, 122, 0.35);
+}
+.cm-btn--success:hover {
+  background: rgba(52, 201, 122, 0.22);
+}
+
+/* ─── JSON syntax tokens ─────────────────────────────────────────────────────── */
+.j-key   { color: #c792ea; }               /* property key    — purple     */
+.j-str   { color: #c3e88d; }               /* string value    — green      */
+.j-num   { color: #f78c6c; }               /* number          — orange     */
+.j-bool  { color: #89ddff; }               /* boolean         — cyan       */
+.j-null  { color: #f07178; }               /* null            — pink/red   */
+.j-brace { color: #ffffff; }               /* { } [ ]         — white      */
+.j-punct { color: var(--wb-text-muted); }  /* , :             — muted      */
+
+/* ─── XML syntax tokens ──────────────────────────────────────────────────────── */
+.x-decl  { color: #546e7a; font-style: italic; }  /* <?xml?> — gray        */
+.x-tag   { color: #82aaff; }               /* tag names       — blue       */
+.x-attr  { color: #ffcb6b; }               /* attributes      — amber      */
+.x-text  { color: #eeffff; }               /* text content    — near-white */
+.x-punct { color: var(--wb-text-muted); }  /* < > </ />       — muted      */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* Task 8 — Aviator AI Panel                                                  */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Panel body override: column flex for stacked AI sections ──────────────── */
+/* Dual-class selector overrides the default .ds-panel__body overflow/padding. */
+.ds-panel__body.ai-panel-body {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  gap: 0;
+}
+
+/* ── Explain document action strip ─────────────────────────────────────────── */
+.ai-actions {
+  padding: 8px 10px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--wb-border);
+}
+
+/* ── AI icon buttons ────────────────────────────────────────────────────────── */
+.ai-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 0 10px;
+  height: 28px;
+  border-radius: 5px;
+  border: 1px solid var(--wb-border);
+  background: var(--wb-bg-elevated);
+  color: var(--wb-text-secondary);
+  font-family: var(--wb-font-ui);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+.ai-btn:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.14);
+  border-color: rgba(99, 102, 241, 0.5);
+  color: var(--wb-accent-text);
+}
+.ai-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+/* Shared icon mask pattern (same as ds-panel__btn-icon) */
+.ai-btn__icon {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  background: currentColor;
+  -webkit-mask-image: var(--icon-url);
+          mask-image: var(--icon-url);
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+}
+
+/* ── Selected segment context box ──────────────────────────────────────────── */
+.ai-context {
+  flex-shrink: 0;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--wb-border);
+  background: rgba(99, 102, 241, 0.06);
+}
+.ai-context__label {
+  display: block;
+  font-size: 10.5px;
+  color: var(--wb-text-muted);
+  margin-bottom: 4px;
+  letter-spacing: 0.01em;
+}
+.ai-context__label strong {
+  color: var(--wb-accent-text);
+  font-weight: 600;
+}
+.ai-context__raw {
+  margin: 0;
+  font-family: var(--wb-font-mono);
+  font-size: 10.5px;
+  color: var(--wb-text-secondary);
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+/* ── Streaming response area ────────────────────────────────────────────────── */
+.ai-response {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px;
+}
+.ai-response--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ai-response__placeholder {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--wb-text-muted);
+  text-align: center;
+  line-height: 1.65;
+  padding: 4px;
+}
+.ai-response__content {
+  font-size: 12px;
+  color: var(--wb-text-primary);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Blinking streaming cursor */
+.ai-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 13px;
+  background: var(--wb-accent-text);
+  border-radius: 1px;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: ai-blink 0.9s step-end infinite;
+}
+@keyframes ai-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Free-text prompt input form ────────────────────────────────────────────── */
+.ai-input-form {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 8px;
+  border-top: 1px solid var(--wb-border);
+  background: var(--wb-bg-surface);
+}
+.ai-input {
+  flex: 1;
+  min-height: 54px;
+  max-height: 120px;
+  resize: none;
+  padding: 6px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--wb-border);
+  background: var(--wb-bg-elevated);
+  color: var(--wb-text-primary);
+  font-family: var(--wb-font-ui);
+  font-size: 12px;
+  line-height: 1.5;
+  transition: border-color 0.15s ease;
+}
+.ai-input:focus {
+  outline: none;
+  border-color: var(--wb-accent);
+}
+.ai-input::placeholder {
+  color: var(--wb-text-muted);
+}
+.ai-input:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ai-send-btn {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  background: var(--wb-accent);
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s ease, opacity 0.12s ease;
+}
+.ai-send-btn:hover:not(:disabled) {
+  background: #4f46e5;
+}
+.ai-send-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
