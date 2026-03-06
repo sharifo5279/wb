@@ -13,7 +13,7 @@ interface TabConfig {
 
 const TABS: TabConfig[] = [
   { id: 'document-studio',      label: 'Document Studio',      icon: 'file-text',     showBadge: false },
-  { id: 'spec-intelligence',    label: 'Spec Intelligence',    icon: 'book-open',     showBadge: true  },
+  { id: 'spec-intelligence',    label: 'Spec Intelligence',    icon: 'book-open',     showBadge: false },
   { id: 'mapping-designer',     label: 'Mapping Designer',     icon: 'git-branch',    showBadge: true  },
   { id: 'test-lab',             label: 'Test Lab',             icon: 'flask-conical', showBadge: true  },
   { id: 'transaction-debugger', label: 'Transaction Debugger', icon: 'bug',           showBadge: true  },
