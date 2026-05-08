@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { DocumentStudio } from './components/document-studio/DocumentStudio';
 
 /**
@@ -29,6 +30,9 @@ export default function EdiNotepadPage() {
 
       <div className="wb-statusbar" aria-label="Notepad status">
         <span>EDI Notepad 2026 v0.1</span>
+        <Link href="/edi-notepad/coverage" className="wb-statusbar__link">
+          Coverage
+        </Link>
         <span className="wb-statusbar__ready">● Ready</span>
       </div>
     </div>

@@ -13,12 +13,17 @@ export interface SegmentDescriptor {
   known: boolean;
 }
 
+/** Severity of a validation issue. Defaults to 'error' for backward compat. */
+export type ParseErrorSeverity = 'error' | 'warning';
+
 /** One validation error attached to a segment or document. */
 export interface ParseError {
   /** 1-based line (or approximate segment index) in the source document. */
   line: number;
   segmentId: string;
   message: string;
+  /** Severity. Omitted = 'error'. */
+  severity?: ParseErrorSeverity;
 }
 
 /** A fully-parsed segment with its elements and any validation errors. */

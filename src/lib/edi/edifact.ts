@@ -1,5 +1,6 @@
 import type { ParseResult, Segment, SegmentNode, ParseError } from "./types";
 import { getEdifactDescriptor } from "./descriptors";
+import { validateEdifact } from "./validation";
 
 // ─── EDIFACT tokenizer and hierarchy builder ──────────────────────────────────
 
@@ -140,7 +141,12 @@ export function parseEdifact(raw: string): ParseResult {
   const hierarchy: SegmentNode[] = [];
   buildEdifactHierarchy(segments, hierarchy);
 
-  return { standard: "EDIFACT", segments, errors: allErrors, hierarchy };
+  const result: ParseResult = { standard: "EDIFACT", segments, errors: allErrors, hierarchy };
+
+  // ── 5. Cross-segment validation (trailer counts, control numbers, mandatory) ─
+  validateEdifact(result);
+
+  return result;
 }
 
 // ─── Hierarchy builder ────────────────────────────────────────────────────────

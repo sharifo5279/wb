@@ -1,5 +1,6 @@
 import type { ParseResult, Segment, SegmentNode, ParseError } from "./types";
 import { getX12Descriptor } from "./descriptors";
+import { validateX12 } from "./validation";
 
 // ─── X12 tokenizer and hierarchy builder ─────────────────────────────────────
 
@@ -96,7 +97,12 @@ export function parseX12(raw: string): ParseResult {
   const hierarchy: SegmentNode[] = [];
   buildX12Hierarchy(segments, hierarchy);
 
-  return { standard: "X12", segments, errors: allErrors, hierarchy };
+  const result: ParseResult = { standard: "X12", segments, errors: allErrors, hierarchy };
+
+  // ── 5. Cross-segment validation (trailer counts, control numbers, mandatory) ─
+  validateX12(result);
+
+  return result;
 }
 
 // ─── Hierarchy builder ────────────────────────────────────────────────────────
