@@ -13,12 +13,15 @@ function icon(name: string): React.CSSProperties {
   return { '--icon-url': `url(${CDN}/${name}.svg)` } as React.CSSProperties;
 }
 
+export type ToolAction = 'increment' | 'summary' | 'ack' | 'split' | 'print';
+
 interface ToolbarProps {
   standard: DocumentStandard;
   hasValidDocument: boolean;
   onFileLoad: (text: string) => void;
   onConvert: (format: 'json' | 'xml') => void;
   onClear: () => void;
+  onTool: (action: ToolAction) => void;
 }
 
 /**
@@ -32,6 +35,7 @@ export function Toolbar({
   onFileLoad,
   onConvert,
   onClear,
+  onTool,
 }: ToolbarProps) {
   const fileInputRef                  = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -80,6 +84,13 @@ export function Toolbar({
         aria-hidden="true"
         tabIndex={-1}
       />
+
+      <span className="ds-toolbar__brand" aria-label="EDI Notepad 2026">
+        <span className="ds-toolbar__brand-mark">EDI Notepad</span>
+        <span className="ds-toolbar__brand-year">2026</span>
+      </span>
+
+      <span className="ds-toolbar__sep" role="separator" aria-orientation="vertical" />
 
       <div className="ds-toolbar__group">
 
@@ -133,6 +144,29 @@ export function Toolbar({
           <span className="ds-toolbar__icon" aria-hidden="true" style={icon('trash-2')} />
           Clear
         </button>
+
+        <span className="ds-toolbar__sep" role="separator" aria-orientation="vertical" />
+
+        {/* Classic utilities — surfaced as a single dropdown to keep the toolbar compact */}
+        <select
+          className="ds-toolbar__select"
+          disabled={!hasValidDocument}
+          aria-label="Tools"
+          title={hasValidDocument ? 'Classic Notepad utilities' : 'Load a valid document first'}
+          value=""
+          onChange={(e) => {
+            const v = e.target.value as ToolAction | '';
+            if (v) onTool(v);
+            e.target.value = '';
+          }}
+        >
+          <option value="" disabled>Tools…</option>
+          <option value="increment">Increment Control Numbers</option>
+          <option value="summary">Summary Report</option>
+          <option value="ack">Generate ACK</option>
+          <option value="split">Split Interchanges</option>
+          <option value="print">Print Business View</option>
+        </select>
       </div>
 
       {uploadError && (
