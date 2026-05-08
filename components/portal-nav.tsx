@@ -10,7 +10,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/' },
-  { label: 'EDI Workbench', href: '/edi-workbench' },
+  { label: 'EDI Notepad', href: '/edi-notepad' },
   { label: 'Trading Partners', href: '/trading-partners' },
   { label: 'Reports', href: '/reports' },
   { label: 'Settings', href: '/settings' },

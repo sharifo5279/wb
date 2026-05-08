@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import type React from 'react';
-import type { Segment, SegmentNode } from '@/src/lib/edi/types';
+import type { SegmentNode } from '@/src/lib/edi/types';
 
 const CDN = 'https://cdn.jsdelivr.net/npm/lucide-static@latest/icons';
 
@@ -33,11 +33,6 @@ export interface SegmentTreeNodeProps {
   activeSegmentLine: number | null;
   /** Called when the user clicks this row (for editor scroll/highlight). */
   onNodeClick: (line: number) => void;
-  /**
-   * Task 8 — called with the full Segment object when the user clicks a row.
-   * Lets DocumentStudio pass the selected segment to PanelAI for AI explanation.
-   */
-  onSegmentSelect: (segment: Segment) => void;
 }
 
 /**
@@ -58,7 +53,6 @@ export function SegmentTreeNode({
   depth,
   activeSegmentLine,
   onNodeClick,
-  onSegmentSelect,
 }: SegmentTreeNodeProps) {
   const { segment, isLoop, loopId, children } = node;
 
@@ -93,7 +87,6 @@ export function SegmentTreeNode({
         style={{ paddingLeft: indent }}
         onClick={() => {
           onNodeClick(segment.line);
-          onSegmentSelect(segment);
           if (isLoop) setExpanded((v) => !v);
         }}
         aria-expanded={isLoop ? expanded : undefined}
@@ -144,7 +137,6 @@ export function SegmentTreeNode({
           depth={depth + 1}
           activeSegmentLine={activeSegmentLine}
           onNodeClick={onNodeClick}
-          onSegmentSelect={onSegmentSelect}
         />
       ))}
     </div>

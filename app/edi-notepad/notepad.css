@@ -1,13 +1,9 @@
 /*
- * EDI Workbench — Design tokens (Task 5)
+ * EDI Notepad 2026 — Design tokens
  *
- * Scoped to .wb-shell so that --wb-* tokens do NOT leak into the
- * parent portal's styles.  Every component under app/edi-workbench/
- * inherits these variables because they are all descendants of .wb-shell.
- *
- * Font tokens (--wb-font-ui / --wb-font-mono) are defined here as static
- * fallbacks; the self-hosted next/font classes in layout.tsx override them
- * with optimised, locally-served font-families at runtime.
+ * Scoped to .wb-shell so the --wb-* tokens don't leak into the parent
+ * portal's styles. Class-name namespace is preserved from the workbench
+ * scaffold so existing component CSS continues to apply unchanged.
  */
 
 .wb-shell {

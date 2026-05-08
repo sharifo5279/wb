@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import type { Segment, SegmentNode, ParseError } from '@/src/lib/edi/types';
+import type { SegmentNode, ParseError } from '@/src/lib/edi/types';
 import { SegmentTree } from './SegmentTree';
 
 const CDN = 'https://cdn.jsdelivr.net/npm/lucide-static@latest/icons';
@@ -13,16 +13,12 @@ function icon(name: string): React.CSSProperties {
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface PanelTreeProps {
-  // ── Panel shell (Task 2) ──
   collapsed: boolean;
   onToggle: () => void;
-  // ── Segment tree data (Task 3) ──
   hierarchy: SegmentNode[];
   errors: ParseError[];
   activeSegmentLine: number | null;
   onNodeClick: (line: number) => void;
-  /** Task 8 — called with the Segment object when a tree node is clicked. */
-  onSegmentSelect: (segment: Segment) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -46,7 +42,6 @@ export function PanelTree({
   errors,
   activeSegmentLine,
   onNodeClick,
-  onSegmentSelect,
 }: PanelTreeProps) {
   const errorCount = errors.length;
 
@@ -100,7 +95,6 @@ export function PanelTree({
           errors={errors}
           activeSegmentLine={activeSegmentLine}
           onNodeClick={onNodeClick}
-          onSegmentSelect={onSegmentSelect}
         />
       </div>
     </aside>

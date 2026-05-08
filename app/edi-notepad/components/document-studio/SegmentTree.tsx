@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import type { Segment, SegmentNode, ParseError } from '@/src/lib/edi/types';
+import type { SegmentNode, ParseError } from '@/src/lib/edi/types';
 import { SegmentTreeNode } from './SegmentTreeNode';
 
 const CDN = 'https://cdn.jsdelivr.net/npm/lucide-static@latest/icons';
@@ -17,8 +17,6 @@ export interface SegmentTreeProps {
   activeSegmentLine: number | null;
   /** Called when the user clicks a tree node — editor should scroll to this line. */
   onNodeClick: (line: number) => void;
-  /** Task 8 — called with the Segment object on each node click (for AI explanation). */
-  onSegmentSelect: (segment: Segment) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -38,7 +36,6 @@ export function SegmentTree({
   errors: _errors,
   activeSegmentLine,
   onNodeClick,
-  onSegmentSelect,
 }: SegmentTreeProps) {
   // ── Empty state ────────────────────────────────────────────────────────────
   if (hierarchy.length === 0) {
@@ -72,7 +69,6 @@ export function SegmentTree({
           depth={0}
           activeSegmentLine={activeSegmentLine}
           onNodeClick={onNodeClick}
-          onSegmentSelect={onSegmentSelect}
         />
       ))}
     </div>
