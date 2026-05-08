@@ -2892,3 +2892,223 @@ body {
 }
 .ds-bv-element__pos { color: var(--wb-text-muted); }
 .ds-bv-element__val { color: var(--wb-text-primary); }
+
+/* ─── Summary / ACK / Split modal styling ───────────────────────────────── */
+
+.cm-modal--summary,
+.cm-modal--ack,
+.cm-modal--split {
+  width: min(820px, calc(100vw - 48px));
+  max-height: min(86vh, 720px);
+}
+
+.sm-body { padding: 16px 20px; }
+
+.sm-section { margin-bottom: 18px; }
+.sm-section:last-child { margin-bottom: 0; }
+.sm-section__title {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wb-text-secondary);
+}
+
+.sm-kv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 6px 10px;
+}
+
+.sm-kv {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border: 1px solid var(--wb-border);
+  border-radius: 4px;
+  font-size: 12px;
+  background: var(--wb-bg-surface);
+}
+.sm-kv__k { color: var(--wb-text-secondary); }
+.sm-kv__v { color: var(--wb-text-primary); font-weight: 600; }
+.sm-kv--ok    { border-color: rgba(52, 201, 122, 0.4); background: rgba(52, 201, 122, 0.06); }
+.sm-kv--warn  { border-color: rgba(245, 166, 35, 0.45); background: rgba(245, 166, 35, 0.06); }
+.sm-kv--error { border-color: rgba(239, 68, 68, 0.45); background: rgba(239, 68, 68, 0.06); }
+.sm-kv--error .sm-kv__v { color: #ef4444; }
+
+.sm-mono { font-family: var(--wb-font-mono, monospace); }
+
+.sm-group {
+  margin-top: 10px;
+  border: 1px solid var(--wb-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.sm-group__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--wb-bg-surface);
+  border-bottom: 1px solid var(--wb-border);
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+.sm-group__label {
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--wb-text-secondary);
+  font-weight: 700;
+}
+.sm-group__sep { color: var(--wb-text-muted); }
+.sm-group__ctrl { margin-left: auto; color: var(--wb-text-secondary); font-size: 11px; }
+.sm-arrow { color: var(--wb-accent); }
+
+.sm-txn-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.sm-txn-table th {
+  text-align: left;
+  padding: 6px 12px;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--wb-text-secondary);
+  background: var(--wb-bg-elevated);
+}
+.sm-txn-table td { padding: 6px 12px; border-top: 1px solid var(--wb-border-sub); }
+.sm-num { text-align: right; font-variant-numeric: tabular-nums; }
+.sm-num--error { color: #ef4444; font-weight: 600; }
+
+.sm-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.sm-count-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border: 1px solid var(--wb-border);
+  border-radius: 12px;
+  font-size: 11.5px;
+  background: var(--wb-bg-surface);
+}
+.sm-count-pill__n { color: var(--wb-accent-text); font-weight: 700; }
+
+/* ACK modal */
+.am-body { padding: 16px 20px; }
+.am-error {
+  padding: 10px 12px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+.am-section { margin-bottom: 16px; }
+.am-section__title {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wb-text-secondary);
+}
+.am-filename {
+  margin-left: 8px;
+  color: var(--wb-text-muted);
+  font-family: var(--wb-font-mono, monospace);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.am-statuses { width: 100%; border-collapse: collapse; font-size: 12px; }
+.am-statuses th {
+  text-align: left;
+  padding: 6px 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--wb-text-secondary);
+  background: var(--wb-bg-surface);
+  border-bottom: 1px solid var(--wb-border);
+}
+.am-statuses td { padding: 7px 10px; border-bottom: 1px solid var(--wb-border-sub); vertical-align: middle; }
+
+.am-pill,
+.am-overall {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.am-pill--a, .am-overall--a { background: rgba(52, 201, 122, 0.12); color: #34c97a; border: 1px solid rgba(52, 201, 122, 0.4); }
+.am-pill--e, .am-overall--e { background: rgba(245, 166, 35, 0.12); color: #f5a623; border: 1px solid rgba(245, 166, 35, 0.4); }
+.am-pill--p, .am-overall--p { background: rgba(245, 166, 35, 0.12); color: #f5a623; border: 1px solid rgba(245, 166, 35, 0.4); }
+.am-pill--r, .am-overall--r { background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); }
+
+.am-overall {
+  margin-left: 12px;
+  border: 1px solid var(--wb-border);
+  background: var(--wb-bg-surface);
+  color: var(--wb-text-secondary);
+}
+
+.am-pre {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--wb-bg-primary);
+  border: 1px solid var(--wb-border);
+  border-radius: 4px;
+  font-family: var(--wb-font-mono, monospace);
+  font-size: 12px;
+  color: var(--wb-text-primary);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+/* ─── Print stylesheet — paint the Business view, hide everything else ─── */
+@media print {
+  body { background: white !important; color: black !important; }
+  .portal-nav,
+  .ds-toolbar,
+  .ds-panel-tree,
+  .ds-panel__header,
+  .ds-editor-statusbar,
+  .wb-statusbar,
+  .cm-overlay {
+    display: none !important;
+  }
+  .ds-layout, .ds-panels, .ds-panel-editor, .ds-panel__body, .ds-bv-scroll {
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+    flex: none !important;
+  }
+  .ds-bv-doc {
+    color: black !important;
+    background: white !important;
+    padding: 0 !important;
+    page-break-after: always;
+  }
+  .ds-bv-doc__title,
+  .ds-bv-meta-value,
+  .ds-bv-section__title,
+  .ds-bv-party__name,
+  .ds-bv-lineitems td,
+  .ds-bv-lineitems th { color: black !important; background: white !important; }
+  .ds-bv-section__title,
+  .ds-bv-meta-label,
+  .ds-bv-party__role { color: #444 !important; }
+  .ds-bv-party,
+  .ds-bv-kv,
+  .ds-bv-lineitems,
+  .ds-bv-hl-tree { background: white !important; border-color: #ccc !important; }
+}

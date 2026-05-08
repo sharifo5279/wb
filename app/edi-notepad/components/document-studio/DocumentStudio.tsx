@@ -2,10 +2,14 @@
 
 import { useState, useMemo } from 'react';
 import type { SegmentNode, ParseError, ParseResult, EDIStandard } from '@/src/lib/edi/types';
-import { Toolbar } from './Toolbar';
+import { incrementControlNumbers } from '@/src/lib/edi/control-numbers';
+import { Toolbar, type ToolAction } from './Toolbar';
 import { PanelTree } from './PanelTree';
 import { PanelEditor } from './PanelEditor';
 import { ConvertModal } from './ConvertModal';
+import { SummaryModal } from './SummaryModal';
+import { AckModal } from './AckModal';
+import { SplitModal } from './SplitModal';
 
 /** The detected EDI standard (null = empty editor, no document loaded). */
 export type DocumentStandard = 'X12' | 'EDIFACT' | 'Unknown' | null;
@@ -49,6 +53,9 @@ export function DocumentStudio() {
 
   const [convertOpen,   setConvertOpen]   = useState(false);
   const [convertFormat, setConvertFormat] = useState<'json' | 'xml'>('json');
+  const [summaryOpen,   setSummaryOpen]   = useState(false);
+  const [ackOpen,       setAckOpen]       = useState(false);
+  const [splitOpen,     setSplitOpen]     = useState(false);
 
   const [treePanelCollapsed, setTreePanelCollapsed] = useState(false);
 
@@ -104,6 +111,35 @@ export function DocumentStudio() {
     setConvertOpen(true);
   }
 
+  function handleTool(action: ToolAction) {
+    switch (action) {
+      case 'increment': {
+        if (!rawContent) return;
+        const { text, changes } = incrementControlNumbers(rawContent);
+        if (changes.length === 0) {
+          window.alert('No control numbers found to increment.');
+          return;
+        }
+        setEditorInitialContent(text);
+        setEditorKey((k) => k + 1);
+        window.alert(
+          `Incremented ${changes.length} control number${changes.length === 1 ? '' : 's'}:\n` +
+          changes.map((c) => `  ${c.segmentId}${c.element}: ${c.fromValue} → ${c.toValue}`).join('\n'),
+        );
+        return;
+      }
+      case 'summary': setSummaryOpen(true); return;
+      case 'ack': setAckOpen(true); return;
+      case 'split': setSplitOpen(true); return;
+      case 'print': {
+        if (viewMode !== 'business') setViewMode('business');
+        // Defer print until the Business view has rendered.
+        requestAnimationFrame(() => window.print());
+        return;
+      }
+    }
+  }
+
   function handleViewChange(next: ViewMode) {
     // Business and Hex require a parsed/loaded document; ignore the request
     // when there's nothing to show.
@@ -119,6 +155,7 @@ export function DocumentStudio() {
         onFileLoad={handleFileLoad}
         onConvert={handleConvert}
         onClear={handleClear}
+        onTool={handleTool}
       />
 
       <div className="ds-panels">
@@ -153,6 +190,24 @@ export function DocumentStudio() {
         initialFormat={convertFormat}
         parseResult={parseResult}
         onClose={() => setConvertOpen(false)}
+      />
+
+      <SummaryModal
+        open={summaryOpen}
+        parseResult={parseResult}
+        onClose={() => setSummaryOpen(false)}
+      />
+
+      <AckModal
+        open={ackOpen}
+        parseResult={parseResult}
+        onClose={() => setAckOpen(false)}
+      />
+
+      <SplitModal
+        open={splitOpen}
+        rawContent={rawContent}
+        onClose={() => setSplitOpen(false)}
       />
     </div>
   );
