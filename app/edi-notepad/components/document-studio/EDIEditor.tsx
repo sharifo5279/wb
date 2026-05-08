@@ -9,8 +9,10 @@ import {
 } from 'react';
 import { parseEDI, PARSE_DEBOUNCE_MS } from '@/src/lib/edi/parser';
 import type { Segment, ParseError, SegmentNode } from '@/src/lib/edi/types';
+import { computeMatches } from '@/src/lib/edi/find';
 import type { DocumentStandard } from './DocumentStudio';
 import { EditorLine } from './EditorLine';
+import { FindBar } from './FindBar';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -153,6 +155,14 @@ export function EDIEditor({
   const [hierarchy, setHierarchy] = useState<SegmentNode[]>([]);
   const [errors,    setErrors]    = useState<ParseError[]>([]);
 
+  // ── Find / Replace state ───────────────────────────────────────────────────
+  const [findOpen,        setFindOpen]        = useState(false);
+  const [findShowReplace, setFindShowReplace] = useState(false);
+  const [findQuery,       setFindQuery]       = useState('');
+  const [findReplace,     setFindReplace]     = useState('');
+  const [findCase,        setFindCase]        = useState(false);
+  const [findIdx,         setFindIdx]         = useState(0);
+
   const textareaRef      = useRef<HTMLTextAreaElement>(null);
   const scrollerRef      = useRef<HTMLDivElement>(null);
   const debounceRef      = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -180,6 +190,12 @@ export function EDIEditor({
   const lineMap   = useMemo(() => buildLineMap(rawLines, segments), [rawLines, segments]);
   const loopLines = useMemo(() => collectLoopIds(hierarchy), [hierarchy]);
   const errorMap  = useMemo(() => buildErrorMap(errors), [errors]);
+
+  // Find — recompute match positions whenever the bar is open and query/case/content change
+  const findMatches = useMemo(() => {
+    if (!findOpen || !findQuery) return [];
+    return computeMatches(content, findQuery, findCase);
+  }, [findOpen, findQuery, findCase, content]);
 
   // ── Mount-time parse ────────────────────────────────────────────────────────
   // Fires once on mount (or remount when editorKey changes in DocumentStudio).
@@ -212,8 +228,9 @@ export function EDIEditor({
 
     const result = parseEDI(raw);
     const detectedStandard: DocumentStandard =
-      result.standard === 'Unknown' ? 'Unknown'
-      : result.standard === 'X12'   ? 'X12'
+      result.standard === 'Unknown'   ? 'Unknown'
+      : result.standard === 'X12'     ? 'X12'
+      : result.standard === 'TRADACOMS' ? 'TRADACOMS'
       : 'EDIFACT';
 
     setSegments(result.segments);
@@ -320,9 +337,101 @@ export function EDIEditor({
     });
   }, [content, runParse]);
 
-  // ── Tab key support in textarea ────────────────────────────────────────────
+  // ── Find / Replace handlers ────────────────────────────────────────────────
+
+  const openFind = useCallback((withReplace: boolean) => {
+    setFindOpen(true);
+    setFindShowReplace(withReplace);
+    // Seed the query with the current textarea selection if non-empty.
+    const ta = textareaRef.current;
+    if (ta) {
+      const sel = ta.value.slice(ta.selectionStart, ta.selectionEnd);
+      if (sel && !sel.includes('\n')) setFindQuery(sel);
+    }
+  }, []);
+
+  const closeFind = useCallback(() => {
+    setFindOpen(false);
+    setFindShowReplace(false);
+    textareaRef.current?.focus();
+  }, []);
+
+  const nextMatch = useCallback(() => {
+    if (findMatches.length === 0) return;
+    setFindIdx((i) => (i + 1) % findMatches.length);
+  }, [findMatches.length]);
+
+  const prevMatch = useCallback(() => {
+    if (findMatches.length === 0) return;
+    setFindIdx((i) => (i - 1 + findMatches.length) % findMatches.length);
+  }, [findMatches.length]);
+
+  const replaceCurrent = useCallback(() => {
+    if (findMatches.length === 0 || !findQuery) return;
+    const start = findMatches[findIdx];
+    const newContent = content.slice(0, start) + findReplace + content.slice(start + findQuery.length);
+    setContent(newContent);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    runParse(newContent);
+    // Stay on the next match (current index now points at the next element after splice)
+  }, [content, findIdx, findMatches, findQuery, findReplace, runParse]);
+
+  const replaceAllMatches = useCallback(() => {
+    if (findMatches.length === 0 || !findQuery) return;
+    let out = content;
+    for (let i = findMatches.length - 1; i >= 0; i--) {
+      const start = findMatches[i];
+      out = out.slice(0, start) + findReplace + out.slice(start + findQuery.length);
+    }
+    setContent(out);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    runParse(out);
+    setFindIdx(0);
+  }, [content, findMatches, findQuery, findReplace, runParse]);
+
+  // Reset findIdx when the match set changes shape
+  useEffect(() => {
+    if (findMatches.length === 0) {
+      setFindIdx(0);
+    } else if (findIdx >= findMatches.length) {
+      setFindIdx(0);
+    }
+  }, [findMatches.length, findIdx]);
+
+  // Highlight current match in the textarea + scroll its line into view
+  useEffect(() => {
+    if (!findOpen || findMatches.length === 0) return;
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = findMatches[findIdx];
+    const end = start + findQuery.length;
+    // Use selection so the browser scrolls the textarea naturally; but also
+    // scroll the rendered line into view via lineRefs (since the visible
+    // layer is the styled div, not the textarea).
+    ta.setSelectionRange(start, end);
+    const lineNum = content.slice(0, start).split('\n').length;
+    const el = lineRefs.current.get(lineNum);
+    if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [findOpen, findIdx, findMatches, findQuery, content]);
+
+  // ── Tab + Ctrl+F / Ctrl+H key support in textarea ─────────────────────────
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+      e.preventDefault();
+      openFind(false);
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'h' || e.key === 'H')) {
+      e.preventDefault();
+      openFind(true);
+      return;
+    }
+    if (e.key === 'Escape' && findOpen) {
+      e.preventDefault();
+      closeFind();
+      return;
+    }
     if (e.key === 'Tab') {
       e.preventDefault();
       const ta = e.currentTarget;
@@ -335,7 +444,7 @@ export function EDIEditor({
         ta.setSelectionRange(start + 2, start + 2);
       });
     }
-  }, []);
+  }, [openFind, closeFind, findOpen]);
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -343,10 +452,29 @@ export function EDIEditor({
 
   return (
     <div className="ds-edi-editor" aria-label="EDI document editor">
+      <FindBar
+        open={findOpen}
+        query={findQuery}
+        replaceQuery={findReplace}
+        matchCount={findMatches.length}
+        currentMatch={findMatches.length === 0 ? 0 : findIdx + 1}
+        showReplace={findShowReplace}
+        caseSensitive={findCase}
+        onQueryChange={setFindQuery}
+        onReplaceQueryChange={setFindReplace}
+        onPrev={prevMatch}
+        onNext={nextMatch}
+        onReplace={replaceCurrent}
+        onReplaceAll={replaceAllMatches}
+        onToggleReplace={() => setFindShowReplace((v) => !v)}
+        onToggleCase={() => setFindCase((v) => !v)}
+        onClose={closeFind}
+      />
+
       {/* Empty-state hint — shown when the editor has no content. The overlay
           is non-interactive (pointer-events: none); the underlying textarea
           still receives focus and paste events. */}
-      {isEmpty && (
+      {isEmpty && !findOpen && (
         <div className="ds-edi-editor__hint" aria-hidden="true">
           <div className="ds-edi-editor__hint-title">Paste an EDI document here</div>
           <div className="ds-edi-editor__hint-sub">

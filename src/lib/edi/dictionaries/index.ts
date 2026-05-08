@@ -32,6 +32,48 @@ export function getTradacomsMessage(messageCode: string): TransactionDef | undef
   return TRADACOMS_MESSAGES[messageCode];
 }
 
+/** All segments defined for a given standard, sorted by ID. Used by the segments browser. */
+export function listSegments(standard: 'X12' | 'EDIFACT' | 'TRADACOMS'): SegmentDef[] {
+  const dict =
+    standard === 'X12'      ? X12_SEGMENTS
+    : standard === 'EDIFACT' ? EDIFACT_SEGMENTS
+    : TRADACOMS_SEGMENTS;
+  return Object.values(dict).sort((a, b) => a.id.localeCompare(b.id));
+}
+
+/** All transactions defined for a given standard, sorted by code. */
+export function listTransactions(standard: 'X12' | 'EDIFACT' | 'TRADACOMS'): TransactionDef[] {
+  const dict =
+    standard === 'X12'      ? X12_TRANSACTIONS
+    : standard === 'EDIFACT' ? EDIFACT_MESSAGES
+    : TRADACOMS_MESSAGES;
+  return Object.values(dict).sort((a, b) => {
+    const an = Number(a.code), bn = Number(b.code);
+    if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+    return a.code.localeCompare(b.code);
+  });
+}
+
+/** Lookup a segment by standard + id (used by the dynamic detail route). */
+export function getSegmentByStandard(
+  standard: 'X12' | 'EDIFACT' | 'TRADACOMS',
+  id: string,
+): SegmentDef | undefined {
+  if (standard === 'X12') return X12_SEGMENTS[id];
+  if (standard === 'EDIFACT') return EDIFACT_SEGMENTS[id];
+  return TRADACOMS_SEGMENTS[id];
+}
+
+/** Lookup a transaction by standard + code (used by the dynamic detail route). */
+export function getTransactionByStandard(
+  standard: 'X12' | 'EDIFACT' | 'TRADACOMS',
+  code: string,
+): TransactionDef | undefined {
+  if (standard === 'X12') return X12_TRANSACTIONS[code];
+  if (standard === 'EDIFACT') return EDIFACT_MESSAGES[code];
+  return TRADACOMS_MESSAGES[code];
+}
+
 /**
  * Determine element coverage classification:
  *   'full'    → every element of every defined segment has type/length info
