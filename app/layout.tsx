@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { PortalNav } from '@/components/portal-nav';
 
 export const metadata: Metadata = {
   title: 'OpenText Business Network — EDI Notepad 2026',
@@ -8,15 +7,10 @@ export const metadata: Metadata = {
 };
 
 /**
- * Root layout — shared by every route in the portal.
+ * Root layout — every route fills the viewport directly.
  *
- * Layout bands (flex column on <body>):
- *   1. <PortalNav>   — fixed-height portal navigation bar (56 px)
- *   2. {children}    — remaining viewport height; each route fills this space
- *
- * The <body> owns the `height: 100vh / display: flex / overflow: hidden`
- * contract so that the EDI Notepad workspace (and any other full-bleed
- * route) can achieve a zero-outer-scroll layout without re-rendering the nav.
+ * The earlier portal-style nav has been removed; this app is single-purpose
+ * (EDI Notepad 2026). Each route owns its own header / toolbar.
  */
 export default function RootLayout({
   children,
@@ -25,10 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        <PortalNav />
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

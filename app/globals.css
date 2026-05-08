@@ -26,71 +26,6 @@ body {
   overflow: hidden;
 }
 
-/* ─── Portal nav bar ─────────────────────────────────────────────────────── */
-/* Structural styles only — design tokens will be applied in Task 5. */
-.portal-nav {
-  display: flex;
-  align-items: center;
-  height: 56px;
-  padding: 0 24px;
-  flex-shrink: 0;
-  background-color: #1b2a4a; /* placeholder — Task 5 will replace */
-  color: #ffffff;
-}
-
-.portal-nav__brand {
-  margin-right: 32px;
-  white-space: nowrap;
-}
-
-.portal-nav__brand-name {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-.portal-nav__nav {
-  display: flex;
-  align-items: center;
-  flex: 1;
-}
-
-.portal-nav__list {
-  display: flex;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  gap: 2px;
-}
-
-.portal-nav__item {
-  display: flex;
-}
-
-.portal-nav__link {
-  display: flex;
-  align-items: center;
-  padding: 6px 14px;
-  border-radius: 4px;
-  text-decoration: none;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.72);
-  transition: color 0.12s ease, background-color 0.12s ease;
-}
-
-.portal-nav__link:hover {
-  color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Active state — set via aria-current="page" and the --active modifier class */
-.portal-nav__link--active,
-.portal-nav__link[aria-current='page'] {
-  color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.18);
-}
-
 /* ─── Workbench design tokens ────────────────────────────────────────────── */
 /* Authoritative token definitions live in app/edi-workbench/workbench.css,
    scoped to .wb-shell.  Do NOT redefine --wb-* tokens here.               */
@@ -3077,7 +3012,6 @@ body {
 /* ─── Print stylesheet — paint the Business view, hide everything else ─── */
 @media print {
   body { background: white !important; color: black !important; }
-  .portal-nav,
   .ds-toolbar,
   .ds-panel-tree,
   .ds-panel__header,
@@ -3111,4 +3045,33 @@ body {
   .ds-bv-kv,
   .ds-bv-lineitems,
   .ds-bv-hl-tree { background: white !important; border-color: #ccc !important; }
+}
+
+/* ─── Toolbar brand wordmark ────────────────────────────────────────────── */
+
+.ds-toolbar__brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 0 14px;
+  font-family: var(--wb-font-ui, 'Inter', sans-serif);
+  user-select: none;
+}
+
+.ds-toolbar__brand-mark {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--wb-text-primary);
+}
+
+.ds-toolbar__brand-year {
+  font-family: var(--wb-font-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--wb-accent-text);
+  background: var(--wb-accent-tint);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--wb-accent-glow);
 }

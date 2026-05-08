@@ -85,6 +85,13 @@ export function Toolbar({
         tabIndex={-1}
       />
 
+      <span className="ds-toolbar__brand" aria-label="EDI Notepad 2026">
+        <span className="ds-toolbar__brand-mark">EDI Notepad</span>
+        <span className="ds-toolbar__brand-year">2026</span>
+      </span>
+
+      <span className="ds-toolbar__sep" role="separator" aria-orientation="vertical" />
+
       <div className="ds-toolbar__group">
 
         <button
