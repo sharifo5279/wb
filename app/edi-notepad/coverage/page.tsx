@@ -11,10 +11,11 @@ function StatusPill({ kind, label }: { kind: 'full' | 'partial' | 'stub' | 'none
 }
 
 function CoverageRow({ entry }: { entry: CoverageEntry }) {
+  const href = `/edi-notepad/coverage/${entry.standard}/${entry.version}/${entry.code}`;
   return (
-    <tr>
-      <td className="np-cov-code">{entry.code}</td>
-      <td>{entry.name}</td>
+    <tr className="np-cov-rowlink">
+      <td className="np-cov-code"><Link href={href}>{entry.code}</Link></td>
+      <td><Link href={href}>{entry.name}</Link></td>
       <td className="np-cov-industry">{entry.industry}</td>
       <td>
         {entry.segmentCoverage === 'full' ? (
@@ -69,6 +70,7 @@ export default function CoveragePage() {
   const all = listCoverage();
   const x12 = all.filter((e) => e.standard === 'X12');
   const edifact = all.filter((e) => e.standard === 'EDIFACT');
+  const tradacoms = all.filter((e) => e.standard === 'TRADACOMS');
   const totalFull = all.filter((e) => e.segmentCoverage === 'full').length;
 
   return (
@@ -85,16 +87,23 @@ export default function CoveragePage() {
           <p className="np-cov-page__sub">
             EDI Notepad 2026 ships a curated dictionary covering the transaction sets used in
             Supply Chain, Logistics, Retail, CPG, Manufacturing, Grocery &amp; Cold Chain, and
-            Financial Services. Transactions marked <em>Stub</em> are recognized but their
-            segment list and validation rules are still being authored.
+            Financial Services. Click any transaction row to drill into its segment list and
+            element-level definitions. Transactions marked <em>Stub</em> are recognized but
+            their segment list is still being authored.
           </p>
           <p className="np-cov-page__totals">
-            <strong>{totalFull}</strong> of <strong>{all.length}</strong> transactions have a full segment list.
+            <strong>{totalFull}</strong> of <strong>{all.length}</strong> transactions have a full
+            segment list. Browse the underlying{' '}
+            <Link href="/edi-notepad/coverage/segments" className="np-cov-inline-link">
+              segment dictionary
+            </Link>{' '}
+            for every defined segment across all three standards.
           </p>
         </header>
 
         <CoverageTable title="ANSI X12" version="005010" entries={x12} />
         <CoverageTable title="UN/EDIFACT" version="D01B" entries={edifact} />
+        <CoverageTable title="TRADACOMS" version="ANA001" entries={tradacoms} />
       </div>
 
       <div className="wb-statusbar" aria-label="Notepad status">

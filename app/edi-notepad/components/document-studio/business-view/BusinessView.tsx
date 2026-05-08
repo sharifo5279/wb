@@ -16,7 +16,7 @@ export interface TxnBlock {
   /** Transaction set / message code. */
   code: string;
   /** Standard. */
-  standard: 'X12' | 'EDIFACT';
+  standard: 'X12' | 'EDIFACT' | 'TRADACOMS';
   /** All segments inside the ST..SE (or UNH..UNT) inclusive. */
   segments: Segment[];
   /** Envelope context — sender, receiver, date from ISA/GS or UNB. */
@@ -84,6 +84,31 @@ function extractTransactions(result: ParseResult): TxnBlock[] {
           context: { ...ctx, transactionControl: segs[unhStart].elements[0]?.trim() },
         });
         unhStart = -1;
+      }
+    }
+  } else if (result.standard === 'TRADACOMS') {
+    const stx = segs.find((s) => s.id === 'STX');
+    const ctx = {
+      // STX02 / STX03 are composite identity:name pairs — show the identity portion.
+      sender: stx?.elements[1]?.trim().split(':')[0],
+      receiver: stx?.elements[2]?.trim().split(':')[0],
+      date: stx?.elements[3]?.trim(),
+      interchangeControl: stx?.elements[4]?.trim(),
+    };
+
+    let mhdStart = -1;
+    for (let i = 0; i < segs.length; i++) {
+      if (segs[i].id === 'MHD') mhdStart = i;
+      else if (segs[i].id === 'MTR' && mhdStart >= 0) {
+        const composite = segs[mhdStart].elements[1] ?? '';
+        const code = composite.split(':')[0]?.trim() ?? '';
+        blocks.push({
+          code,
+          standard: 'TRADACOMS',
+          segments: segs.slice(mhdStart, i + 1),
+          context: { ...ctx, transactionControl: segs[mhdStart].elements[0]?.trim() },
+        });
+        mhdStart = -1;
       }
     }
   }
