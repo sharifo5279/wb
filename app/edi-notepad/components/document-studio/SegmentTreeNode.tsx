@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type React from 'react';
 import type { SegmentNode } from '@/src/lib/edi/types';
+import { SegmentContextMenu, type SegmentAction } from './SegmentContextMenu';
 
 const CDN = 'https://cdn.jsdelivr.net/npm/lucide-static@latest/icons';
 
@@ -33,6 +34,8 @@ export interface SegmentTreeNodeProps {
   activeSegmentLine: number | null;
   /** Called when the user clicks this row (for editor scroll/highlight). */
   onNodeClick: (line: number) => void;
+  /** Called when the user picks a structured-edit action from the context menu. */
+  onSegmentAction?: (action: SegmentAction, line: number, segmentId: string) => void;
 }
 
 /**
@@ -53,12 +56,14 @@ export function SegmentTreeNode({
   depth,
   activeSegmentLine,
   onNodeClick,
+  onSegmentAction,
 }: SegmentTreeNodeProps) {
   const { segment, isLoop, loopId, children } = node;
 
   // Envelope/transaction loops open by default; data loops start collapsed.
   const isEnvelopeLoop = ['ISA', 'GS', 'ST', 'UNB', 'UNG', 'UNH'].includes(loopId ?? segment.id);
   const [expanded, setExpanded] = useState<boolean>(isLoop ? isEnvelopeLoop : false);
+  const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null);
 
   const isActive  = segment.line === activeSegmentLine;
   const hasErrors = segment.errors.length > 0;
@@ -89,8 +94,13 @@ export function SegmentTreeNode({
           onNodeClick(segment.line);
           if (isLoop) setExpanded((v) => !v);
         }}
+        onContextMenu={(e) => {
+          if (!onSegmentAction) return;
+          e.preventDefault();
+          setMenuPos({ x: e.clientX, y: e.clientY });
+        }}
         aria-expanded={isLoop ? expanded : undefined}
-        title={shortName ? `${segment.id} — ${shortName}` : segment.id}
+        title={shortName ? `${segment.id} — ${shortName} (right-click for actions)` : `${segment.id} (right-click for actions)`}
       >
         {/* Chevron — loop nodes get a real icon; data nodes get a spacer */}
         {isLoop ? (
@@ -137,8 +147,22 @@ export function SegmentTreeNode({
           depth={depth + 1}
           activeSegmentLine={activeSegmentLine}
           onNodeClick={onNodeClick}
+          onSegmentAction={onSegmentAction}
         />
       ))}
+
+      {menuPos && onSegmentAction && (
+        <SegmentContextMenu
+          x={menuPos.x}
+          y={menuPos.y}
+          segmentId={segment.id}
+          onAction={(action) => {
+            setMenuPos(null);
+            onSegmentAction(action, segment.line, segment.id);
+          }}
+          onClose={() => setMenuPos(null)}
+        />
+      )}
     </div>
   );
 }

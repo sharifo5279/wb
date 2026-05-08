@@ -3,7 +3,15 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { SegmentNode, ParseError, ParseResult, EDIStandard } from '@/src/lib/edi/types';
 import { incrementControlNumbers } from '@/src/lib/edi/control-numbers';
+import {
+  deleteSegment,
+  duplicateSegment,
+  insertSegmentAfter,
+  blankSegment,
+  detectDelimiters,
+} from '@/src/lib/edi/edit-helpers';
 import { Toolbar, type ToolAction } from './Toolbar';
+import type { SegmentAction } from './SegmentContextMenu';
 import { DocTabs } from './DocTabs';
 import { PanelTree } from './PanelTree';
 import { PanelEditor } from './PanelEditor';
@@ -235,6 +243,37 @@ export function DocumentStudio() {
     patchActiveDoc({ viewMode: next });
   }
 
+  function handleSegmentAction(action: SegmentAction, line: number, segmentId: string) {
+    if (!activeDoc.rawContent) return;
+    const { elemSep } = detectDelimiters(activeDoc.rawContent);
+    let next = activeDoc.rawContent;
+
+    switch (action) {
+      case 'delete':
+        if (!window.confirm(`Delete the ${segmentId} segment?`)) return;
+        next = deleteSegment(next, line);
+        break;
+      case 'duplicate':
+        next = duplicateSegment(next, line);
+        break;
+      case 'insertRefAfter':
+        next = insertSegmentAfter(next, line, blankSegment('REF', elemSep, 2));
+        break;
+      case 'insertDtmAfter':
+        next = insertSegmentAfter(next, line, blankSegment('DTM', elemSep, 2));
+        break;
+      case 'insertNteAfter':
+        next = insertSegmentAfter(next, line, blankSegment('NTE', elemSep, 2));
+        break;
+    }
+    if (next === activeDoc.rawContent) return;
+    patchActiveDoc({
+      initialContent: next,
+      rawContent: next,
+      editorKey: activeDoc.editorKey + 1,
+    });
+  }
+
   // ── Tab management ────────────────────────────────────────────────────────
 
   function handleNewDoc() {
@@ -296,6 +335,7 @@ export function DocumentStudio() {
           errors={activeDoc.errors}
           activeSegmentLine={activeDoc.activeSegmentLine}
           onNodeClick={(line) => patchActiveDoc({ activeSegmentLine: line })}
+          onSegmentAction={handleSegmentAction}
         />
 
         <PanelEditor

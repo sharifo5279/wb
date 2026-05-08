@@ -3753,3 +3753,62 @@ body {
 .np-cov-source-banner strong {
   color: var(--wb-text-primary);
 }
+
+/* ─── Right-click context menu (segment tree) ────────────────────────────── */
+
+.ds-ctxmenu {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 4px 0;
+  background: var(--wb-bg-elevated);
+  border: 1px solid var(--wb-border);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  font-family: var(--wb-font-ui, 'Inter', sans-serif);
+}
+
+.ds-ctxmenu__header {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--wb-border);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--wb-text-muted);
+  margin-bottom: 4px;
+}
+
+.ds-ctxmenu__seg {
+  font-family: var(--wb-font-mono, monospace);
+  color: var(--wb-accent-text);
+  font-size: 12px;
+}
+
+.ds-ctxmenu__item {
+  text-align: left;
+  padding: 7px 14px;
+  border: none;
+  background: transparent;
+  color: var(--wb-text-primary);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.ds-ctxmenu__item:hover {
+  background: var(--wb-accent-tint);
+  color: var(--wb-accent-text);
+}
+
+.ds-ctxmenu__item--destructive {
+  color: #ef4444;
+  border-top: 1px solid var(--wb-border-sub);
+  margin-top: 4px;
+  padding-top: 8px;
+}
+
+.ds-ctxmenu__item--destructive:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
