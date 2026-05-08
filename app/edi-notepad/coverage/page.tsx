@@ -6,42 +6,42 @@ export const metadata = {
   title: 'EDI Notepad 2026 — Standards Coverage',
 };
 
-function StatusPill({ kind, label }: { kind: 'full' | 'partial' | 'stub' | 'none'; label: string }) {
-  return <span className={`np-cov-pill np-cov-pill--${kind}`}>{label}</span>;
+/** Binary completeness: full segments + full element metadata = complete. */
+function isComplete(e: CoverageEntry): boolean {
+  return e.segmentCoverage === 'full' && e.elementCoverage === 'full';
+}
+
+function StatusPill({ kind, label }: { kind: 'complete' | 'incomplete'; label: string }) {
+  return <span className={`np-cov-pill np-cov-pill--${kind === 'complete' ? 'full' : 'partial'}`}>{label}</span>;
 }
 
 function CoverageRow({ entry }: { entry: CoverageEntry }) {
   const href = `/edi-notepad/coverage/${entry.standard}/${entry.version}/${entry.code}`;
+  const complete = isComplete(entry);
   return (
     <tr className="np-cov-rowlink">
       <td className="np-cov-code"><Link href={href}>{entry.code}</Link></td>
       <td><Link href={href}>{entry.name}</Link></td>
       <td className="np-cov-industry">{entry.industry}</td>
       <td>
-        {entry.segmentCoverage === 'full' ? (
-          <StatusPill kind="full" label="Full" />
-        ) : (
-          <StatusPill kind="stub" label="Stub" />
-        )}
-      </td>
-      <td>
-        {entry.elementCoverage === 'full' && <StatusPill kind="full" label="Full" />}
-        {entry.elementCoverage === 'partial' && <StatusPill kind="partial" label="Partial" />}
-        {entry.elementCoverage === 'none' && <StatusPill kind="none" label="—" />}
+        <StatusPill
+          kind={complete ? 'complete' : 'incomplete'}
+          label={complete ? 'Complete' : 'Incomplete'}
+        />
       </td>
     </tr>
   );
 }
 
 function CoverageTable({ title, version, entries }: { title: string; version: string; entries: CoverageEntry[] }) {
-  const fullCount = entries.filter((e) => e.segmentCoverage === 'full').length;
+  const completeCount = entries.filter(isComplete).length;
   return (
     <section className="np-cov-section">
       <header className="np-cov-section__header">
         <h2 className="np-cov-section__title">{title}</h2>
         <span className="np-cov-section__version">{version}</span>
         <span className="np-cov-section__count">
-          {fullCount} of {entries.length} with full segment list
+          {completeCount} of {entries.length} complete
         </span>
       </header>
       <div className="np-cov-table-wrap">
@@ -51,8 +51,7 @@ function CoverageTable({ title, version, entries }: { title: string; version: st
               <th>Code</th>
               <th>Name</th>
               <th>Industry</th>
-              <th>Segments</th>
-              <th>Elements</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -71,7 +70,7 @@ export default function CoveragePage() {
   const x12 = all.filter((e) => e.standard === 'X12');
   const edifact = all.filter((e) => e.standard === 'EDIFACT');
   const tradacoms = all.filter((e) => e.standard === 'TRADACOMS');
-  const totalFull = all.filter((e) => e.segmentCoverage === 'full').length;
+  const totalComplete = all.filter(isComplete).length;
 
   return (
     <div
@@ -88,27 +87,20 @@ export default function CoveragePage() {
             EDI Notepad 2026 ships a curated dictionary covering the transaction sets used in
             Supply Chain, Logistics, Retail, CPG, Manufacturing, Grocery &amp; Cold Chain, and
             Financial Services. Click any transaction row to drill into its segment list and
-            element-level definitions. Transactions marked <em>Stub</em> are recognized but
-            their segment list is still being authored.
+            element-level definitions. <strong>Complete</strong> entries have both a full segment
+            list and element-level metadata for every segment; <strong>Incomplete</strong> entries
+            are still being authored — their segments may be defined but element-level detail
+            (data type, length, code lists) is missing for some segments.
           </p>
           <p className="np-cov-page__totals">
-            <strong>{totalFull}</strong> of <strong>{all.length}</strong> transactions have a full
-            segment list. Browse the underlying{' '}
+            <strong>{totalComplete}</strong> of <strong>{all.length}</strong> transactions are
+            complete. Browse the underlying{' '}
             <Link href="/edi-notepad/coverage/segments" className="np-cov-inline-link">
               segment dictionary
             </Link>{' '}
             for every defined segment across all three standards.
           </p>
         </header>
-
-        <div className="np-cov-source-banner" role="note">
-          <strong>About this dictionary.</strong> Entries are compiled from public X12 / UN/EDIFACT
-          / GS1 UK reference summaries, plus AI-assisted compilation for less-common transactions.
-          Element-level metadata is most accurate for the heavily-validated envelope and beginning
-          segments; many body segments are listed by ID only with minimal element detail. For
-          production validation, cross-check against the official ASC X12 publications, UN/CEFACT
-          message directories, or your trading partner&apos;s implementation guide.
-        </div>
 
         <CoverageTable title="ANSI X12" version="005010" entries={x12} />
         <CoverageTable title="UN/EDIFACT" version="D01B" entries={edifact} />

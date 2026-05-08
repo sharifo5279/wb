@@ -40,6 +40,11 @@ export default async function TransactionDetailPage({ params }: PageProps) {
   if (!txn || txn.version !== version) notFound();
 
   const segmentDefsCount = txn.segments.filter((r) => !!getSegmentByStandard(std, r.id)).length;
+  const segmentsWithElements = txn.segments.filter((r) => {
+    const def = getSegmentByStandard(std, r.id);
+    return def && def.elements.length > 0;
+  }).length;
+  const isComplete = txn.full && segmentsWithElements === txn.segments.length;
 
   return (
     <div
@@ -59,13 +64,13 @@ export default async function TransactionDetailPage({ params }: PageProps) {
               <span className="np-cov-detail__name">{txn.name}</span>
             </h1>
             <div className="np-cov-detail__pills">
-              {txn.full ? (
-                <span className="np-cov-pill np-cov-pill--full">Full segment list</span>
+              {isComplete ? (
+                <span className="np-cov-pill np-cov-pill--full">Complete</span>
               ) : (
-                <span className="np-cov-pill np-cov-pill--stub">Stub</span>
+                <span className="np-cov-pill np-cov-pill--partial">Incomplete</span>
               )}
-              {txn.full && segmentDefsCount > 0 && (
-                <span className="np-cov-pill np-cov-pill--partial">
+              {txn.full && segmentDefsCount > 0 && segmentDefsCount < txn.segments.length && (
+                <span className="np-cov-pill np-cov-pill--stub">
                   {segmentDefsCount} of {txn.segments.length} segments defined
                 </span>
               )}
@@ -79,9 +84,19 @@ export default async function TransactionDetailPage({ params }: PageProps) {
 
         {!txn.full && (
           <section className="np-cov-stub-banner">
-            <strong>Stub.</strong> This transaction is recognized by the parser but its segment
-            list is not yet authored. Validation falls back to the generic per-segment checks
-            (unknown segment ID, element count). Add segments to <code>{std === 'X12' ? 'x12-transactions.ts' : std === 'EDIFACT' ? 'edifact-messages.ts' : 'tradacoms-messages.ts'}</code> to enable mandatory-segment validation.
+            <strong>Incomplete — no segment list yet.</strong> This transaction is recognized by
+            the parser but its expected segment list isn&apos;t authored. Validation falls back to
+            the generic per-segment checks (unknown segment ID, element count) without
+            mandatory-segment enforcement.
+          </section>
+        )}
+
+        {txn.full && segmentsWithElements < txn.segments.length && (
+          <section className="np-cov-stub-banner">
+            <strong>Incomplete — partial element coverage.</strong>{' '}
+            {segmentsWithElements} of {txn.segments.length} segments have full element-level
+            metadata (data type, length, code lists). The remaining segments are recognized by
+            ID but their elements are not yet detailed.
           </section>
         )}
 
