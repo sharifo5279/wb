@@ -1,13 +1,14 @@
 /*
  * EDI Notepad 2026 — Design tokens
  *
- * Scoped to .wb-shell so the --wb-* tokens don't leak into the parent
- * portal's styles. Class-name namespace is preserved from the workbench
- * scaffold so existing component CSS continues to apply unchanged.
+ * Two themes share the same `.wb-shell`-scoped variable names. Switch via
+ * `data-theme="light" | "dark"` on <html>. Default = dark to preserve the
+ * existing look; light theme is opt-in via the toolbar toggle (persisted
+ * to localStorage; honours prefers-color-scheme on first load).
  */
 
 .wb-shell {
-  /* ── Core palette ───────────────────────────────────────────────────────── */
+  /* ── Dark (default) ───────────────────────────────────────────────────── */
   --wb-bg-primary:      #0f1117;
   --wb-bg-surface:      #161b27;
   --wb-bg-elevated:     #1e2535;
@@ -18,14 +19,37 @@
   --wb-font-ui:         'Inter', sans-serif;
   --wb-font-mono:       'JetBrains Mono', monospace;
 
-  /* ── Derived tokens ─────────────────────────────────────────────────────── */
   --wb-text-muted:      #55637a;
   --wb-border-sub:      #1e2535;
   --wb-accent-dim:      #1e1f4a;
   --wb-accent-glow:     rgba(99, 102, 241, 0.18);
 
-  /* ── Backward-compatible aliases (referenced by Tasks 2–4 CSS) ────────── */
   --wb-bg-base:         var(--wb-bg-primary);
   --wb-accent-text:     #a5b4fc;
   --wb-accent-tint:     rgba(99, 102, 241, 0.06);
 }
+
+/* Light theme — applied when [data-theme="light"] is set on <html>. */
+html[data-theme="light"] .wb-shell {
+  --wb-bg-primary:      #ffffff;
+  --wb-bg-surface:      #f5f7fa;
+  --wb-bg-elevated:     #eaeef4;
+  --wb-border:          #d1d8e0;
+  --wb-border-sub:      #e6eaf0;
+  --wb-text-primary:    #1a202c;
+  --wb-text-secondary:  #4a5568;
+  --wb-text-muted:      #8892a4;
+
+  --wb-accent:          #4f46e5;
+  --wb-accent-text:     #4338ca;
+  --wb-accent-dim:      #e0e7ff;
+  --wb-accent-glow:     rgba(79, 70, 229, 0.18);
+  --wb-accent-tint:     rgba(79, 70, 229, 0.06);
+}
+
+/* Light-mode tweaks for elements whose styling assumes a dark canvas. */
+html[data-theme="light"] body { background: #ffffff; color: var(--wb-text-primary); }
+html[data-theme="light"] .ds-toolbar__upload-error { background: #fff5f5; }
+html[data-theme="light"] .ds-findbar { box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12); }
+html[data-theme="light"] .cm-modal { box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18); }
+html[data-theme="light"] .cm-overlay { background: rgba(15, 17, 23, 0.4); }

@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import type React from 'react';
 import type { DocumentStandard } from './DocumentStudio';
+import { ThemeToggle } from './ThemeToggle';
 
 const CDN = 'https://cdn.jsdelivr.net/npm/lucide-static@latest/icons';
 
@@ -13,7 +14,7 @@ function icon(name: string): React.CSSProperties {
   return { '--icon-url': `url(${CDN}/${name}.svg)` } as React.CSSProperties;
 }
 
-export type ToolAction = 'increment' | 'summary' | 'ack' | 'split' | 'print';
+export type ToolAction = 'new' | 'increment' | 'summary' | 'ack' | 'split' | 'print';
 
 interface ToolbarProps {
   standard: DocumentStandard;
@@ -187,6 +188,17 @@ export function Toolbar({
         <span className="ds-toolbar__sep" role="separator" aria-orientation="vertical" />
 
         {/* Classic utilities — surfaced as a single dropdown to keep the toolbar compact */}
+        <button
+          type="button"
+          className="ds-toolbar__btn"
+          onClick={() => onTool('new')}
+          aria-label="New EDI Document"
+          title="Build a new EDI skeleton from the dictionary"
+        >
+          <span className="ds-toolbar__icon" aria-hidden="true" style={icon('file-plus')} />
+          New
+        </button>
+
         <select
           className="ds-toolbar__select"
           disabled={!hasValidDocument}
@@ -206,6 +218,12 @@ export function Toolbar({
           <option value="split">Split Interchanges</option>
           <option value="print">Print Business View</option>
         </select>
+      </div>
+
+      <div aria-hidden="true" style={{ flex: 1 }} />
+
+      <div className="ds-toolbar__group">
+        <ThemeToggle />
       </div>
 
       {uploadError && (

@@ -3658,3 +3658,98 @@ body {
   border-radius: 0;
   border-right: 1px solid var(--wb-border);
 }
+
+/* ─── Theme toggle button ────────────────────────────────────────────────── */
+
+.ds-theme-toggle .ds-toolbar__icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* ─── New Document modal ────────────────────────────────────────────────── */
+
+.cm-modal--new {
+  width: min(520px, calc(100vw - 48px));
+}
+
+.nd-body {
+  padding: 16px 20px;
+}
+
+.nd-intro {
+  margin: 0 0 16px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--wb-text-secondary);
+  padding: 10px 12px;
+  background: var(--wb-bg-surface);
+  border: 1px solid var(--wb-border-sub);
+  border-radius: 4px;
+}
+
+.nd-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.nd-label {
+  width: 110px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--wb-text-secondary);
+  flex-shrink: 0;
+}
+
+.nd-input,
+.nd-select {
+  flex: 1;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--wb-border);
+  border-radius: 4px;
+  background: var(--wb-bg-surface);
+  color: var(--wb-text-primary);
+  font-family: var(--wb-font-mono, monospace);
+  font-size: 12.5px;
+  outline: none;
+}
+
+.nd-input:focus,
+.nd-select:focus {
+  border-color: var(--wb-accent);
+  box-shadow: 0 0 0 2px var(--wb-accent-glow);
+}
+
+.nd-error {
+  margin-top: 12px;
+  padding: 8px 10px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+
+/* ─── Source disclosure banner on Coverage page ─────────────────────────── */
+
+.np-cov-source-banner {
+  max-width: 980px;
+  margin: 0 auto 24px;
+  padding: 12px 16px;
+  border: 1px solid var(--wb-border);
+  border-left-width: 3px;
+  border-left-color: var(--wb-accent);
+  border-radius: 4px;
+  background: var(--wb-bg-surface);
+  color: var(--wb-text-secondary);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.np-cov-source-banner strong {
+  color: var(--wb-text-primary);
+}
