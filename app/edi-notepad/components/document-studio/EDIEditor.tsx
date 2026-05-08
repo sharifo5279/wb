@@ -10,9 +10,16 @@ import {
 import { parseEDI, PARSE_DEBOUNCE_MS } from '@/src/lib/edi/parser';
 import type { Segment, ParseError, SegmentNode } from '@/src/lib/edi/types';
 import { computeMatches } from '@/src/lib/edi/find';
+import { replaceElement } from '@/src/lib/edi/edit-helpers';
+import {
+  getX12Segment,
+  getEdifactSegment,
+  getTradacomsSegment,
+} from '@/src/lib/edi/dictionaries';
 import type { DocumentStandard } from './DocumentStudio';
 import { EditorLine } from './EditorLine';
 import { FindBar } from './FindBar';
+import { ElementEditor } from './ElementEditor';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -154,6 +161,7 @@ export function EDIEditor({
   const [segments,  setSegments]  = useState<Segment[]>([]);
   const [hierarchy, setHierarchy] = useState<SegmentNode[]>([]);
   const [errors,    setErrors]    = useState<ParseError[]>([]);
+  const [parsedStandard, setParsedStandard] = useState<DocumentStandard>(null);
 
   // ── Find / Replace state ───────────────────────────────────────────────────
   const [findOpen,        setFindOpen]        = useState(false);
@@ -162,6 +170,15 @@ export function EDIEditor({
   const [findReplace,     setFindReplace]     = useState('');
   const [findCase,        setFindCase]        = useState(false);
   const [findIdx,         setFindIdx]         = useState(0);
+
+  // ── Element-edit popover state ────────────────────────────────────────────
+  interface ElementEditState {
+    line: number;
+    elementIdx: number;
+    x: number;
+    y: number;
+  }
+  const [elemEdit, setElemEdit] = useState<ElementEditState | null>(null);
 
   const textareaRef      = useRef<HTMLTextAreaElement>(null);
   const scrollerRef      = useRef<HTMLDivElement>(null);
@@ -236,6 +253,7 @@ export function EDIEditor({
     setSegments(result.segments);
     setHierarchy(result.hierarchy);
     setErrors(result.errors);
+    setParsedStandard(detectedStandard);
     onSegmentCountChange(result.segments.length);
     onDocumentLoaded(detectedStandard, result.hierarchy, result.errors);
   }, [onDocumentLoaded, onSegmentCountChange, onRawChange]);
@@ -414,6 +432,84 @@ export function EDIEditor({
     if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [findOpen, findIdx, findMatches, findQuery, content]);
 
+  // ── Element edit popover handlers ─────────────────────────────────────────
+
+  const handleElementClick = useCallback((
+    line: number,
+    elementIdx: number,
+    anchor: { x: number; y: number },
+  ) => {
+    setElemEdit({ line, elementIdx, x: anchor.x, y: anchor.y });
+  }, []);
+
+  /** Double-click handler on the textarea — derives (line, elementIdx) from
+      the cursor position and opens the element editor at the click coords.
+      This works regardless of whether the editor is focused (single-click on
+      the rendered span only works pre-focus because the textarea overlay
+      captures clicks once focused). */
+  const handleTextareaDoubleClick = useCallback((e: React.MouseEvent<HTMLTextAreaElement>) => {
+    const ta = e.currentTarget;
+    const pos = ta.selectionStart ?? 0;
+
+    const beforeCursor = ta.value.slice(0, pos);
+    const lineParts = beforeCursor.split('\n');
+    const line = lineParts.length; // 1-based
+    const lineStart = beforeCursor.length - lineParts[lineParts.length - 1].length;
+    const cursorInLine = pos - lineStart;
+
+    // Find the end of the current line in the full text
+    const nl = ta.value.indexOf('\n', lineStart);
+    const lineEnd = nl < 0 ? ta.value.length : nl;
+    const lineText = ta.value.slice(lineStart, lineEnd);
+
+    // Count element separators up to the cursor; idx 0 = segment ID
+    let elementIdx = 0;
+    for (let i = 0; i < cursorInLine && i < lineText.length; i++) {
+      if (lineText[i] === elemSep) elementIdx++;
+    }
+    if (elementIdx < 1) return; // clicked the segment ID
+
+    setElemEdit({ line, elementIdx, x: e.clientX, y: e.clientY });
+  }, [elemSep]);
+
+  const handleElementApply = useCallback((newValue: string) => {
+    if (!elemEdit) return;
+    const next = replaceElement(content, elemEdit.line, elemEdit.elementIdx, newValue);
+    if (next === content) {
+      setElemEdit(null);
+      return;
+    }
+    setContent(next);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    runParse(next);
+    setElemEdit(null);
+  }, [elemEdit, content, runParse]);
+
+  /** Look up the segment definition from the curated dictionary based on the
+      detected standard, so the popover can show the element's name + codes. */
+  const elemEditDef = useMemo(() => {
+    if (!elemEdit) return undefined;
+    const seg = segments.find((s) => s.line === elemEdit.line);
+    if (!seg) return undefined;
+    let segDef;
+    if (parsedStandard === 'X12') segDef = getX12Segment(seg.id);
+    else if (parsedStandard === 'EDIFACT') segDef = getEdifactSegment(seg.id);
+    else if (parsedStandard === 'TRADACOMS') segDef = getTradacomsSegment(seg.id);
+    if (!segDef) return undefined;
+    return segDef.elements[elemEdit.elementIdx - 1];
+  }, [elemEdit, segments, parsedStandard]);
+
+  const elemEditCurrentValue = useMemo(() => {
+    if (!elemEdit) return '';
+    const seg = segments.find((s) => s.line === elemEdit.line);
+    return seg?.elements[elemEdit.elementIdx - 1] ?? '';
+  }, [elemEdit, segments]);
+
+  const elemEditSegmentId = useMemo(() => {
+    if (!elemEdit) return '';
+    return segments.find((s) => s.line === elemEdit.line)?.id ?? '';
+  }, [elemEdit, segments]);
+
   // ── Tab + Ctrl+F / Ctrl+H key support in textarea ─────────────────────────
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -516,6 +612,7 @@ export function EDIEditor({
                 segTerm={segTerm}
                 errors={lineErr}
                 onClick={handleLineClick}
+                onElementClick={handleElementClick}
               />
             </div>
           );
@@ -531,6 +628,7 @@ export function EDIEditor({
         onKeyUp={handleKeyUp}
         onKeyDown={handleKeyDown}
         onClick={handleClick}
+        onDoubleClick={handleTextareaDoubleClick}
         onPaste={handlePaste}
         spellCheck={false}
         autoCorrect="off"
@@ -538,6 +636,19 @@ export function EDIEditor({
         aria-label="EDI document source"
         aria-multiline="true"
       />
+
+      {elemEdit && (
+        <ElementEditor
+          x={elemEdit.x}
+          y={elemEdit.y}
+          segmentId={elemEditSegmentId}
+          position={elemEdit.elementIdx}
+          currentValue={elemEditCurrentValue}
+          def={elemEditDef}
+          onApply={handleElementApply}
+          onCancel={() => setElemEdit(null)}
+        />
+      )}
     </div>
   );
 }

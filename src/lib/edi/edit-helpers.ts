@@ -93,6 +93,37 @@ export function insertSegmentBefore(raw: string, line: number, segmentText: stri
 }
 
 /**
+ * Replace the value at `elementIdx` (1-based) inside the segment at the given
+ * 1-based line. If the segment has fewer elements than `elementIdx`, the
+ * element list is padded with empty strings up to that position. The segment
+ * ID is at index 0 and is never modified.
+ */
+export function replaceElement(
+  raw: string,
+  segmentLine: number,
+  elementIdx: number,
+  newValue: string,
+): string {
+  if (elementIdx < 1) return raw;
+  const { elemSep, segTerm } = detectDelimiters(raw);
+  const parts = raw.split(segTerm);
+  const idx = findSegmentPart(parts, segmentLine);
+  if (idx < 0) return raw;
+
+  const original = parts[idx];
+  const leadingWs = original.length - original.trimStart().length;
+  const ws = original.slice(0, leadingWs);
+  const trimmed = original.trim();
+  const fields = trimmed.split(elemSep);
+
+  while (fields.length <= elementIdx) fields.push('');
+  fields[elementIdx] = newValue;
+
+  parts[idx] = ws + fields.join(elemSep);
+  return parts.join(segTerm);
+}
+
+/**
  * Build a placeholder segment string with N empty data elements separated by
  * the document's element separator. e.g. blankSegment('REF', '*', 2) → 'REF**'.
  * Useful for inserting a stub that the user can fill in.

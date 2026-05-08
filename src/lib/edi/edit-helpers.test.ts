@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { deleteSegment, duplicateSegment, insertSegmentAfter, insertSegmentBefore, blankSegment } from './edit-helpers';
+import { deleteSegment, duplicateSegment, insertSegmentAfter, insertSegmentBefore, blankSegment, replaceElement } from './edit-helpers';
 import { parseEDI } from './parser';
 
 const ISA =
@@ -86,5 +86,27 @@ describe('blankSegment', () => {
   it('produces a placeholder with N empty elements', () => {
     expect(blankSegment('REF', '*', 2)).toBe('REF**');
     expect(blankSegment('DTM', '*', 3)).toBe('DTM***');
+  });
+});
+
+describe('replaceElement', () => {
+  it('replaces an existing element value', () => {
+    const out = replaceElement(X12_DOC, 5, 1, 'XX');
+    // line 5 was REF*DP*001 → expect REF*XX*001
+    expect(out).toMatch(/REF\*XX\*001/);
+    expect(out).not.toMatch(/REF\*DP\*001/);
+  });
+
+  it('pads with empty elements when index is past the end', () => {
+    const out = replaceElement(X12_DOC, 5, 4, 'NEW');
+    expect(out).toMatch(/REF\*DP\*001\*\*NEW/);
+  });
+
+  it('returns input unchanged for invalid line', () => {
+    expect(replaceElement(X12_DOC, 999, 1, 'XX')).toBe(X12_DOC);
+  });
+
+  it('returns input unchanged when elementIdx < 1', () => {
+    expect(replaceElement(X12_DOC, 5, 0, 'XX')).toBe(X12_DOC);
   });
 });

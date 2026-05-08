@@ -10,6 +10,8 @@ type TokenType = 'segId' | 'delimiter' | 'value' | 'date' | 'qualifier';
 interface Token {
   text: string;
   type: TokenType;
+  /** 1-based element position for value/date/qualifier tokens. Undefined for segId/delimiter. */
+  elementIdx?: number;
 }
 
 // ─── Token classifier ─────────────────────────────────────────────────────────
@@ -52,7 +54,7 @@ function tokeniseLine(raw: string, elemSep: string, segTerm: string): Token[] {
       // Separator before each element
       tokens.push({ text: elemSep, type: 'delimiter' });
       if (part.length > 0) {
-        tokens.push({ text: part, type: classifyValue(part) });
+        tokens.push({ text: part, type: classifyValue(part), elementIdx: idx });
       }
     }
   });
@@ -114,6 +116,8 @@ export interface EditorLineProps {
   errors: ParseError[];
   /** Called when the user clicks this line. */
   onClick: (line: number) => void;
+  /** Called when the user clicks a value/qualifier/date token to edit it. */
+  onElementClick?: (line: number, elementIdx: number, anchor: { x: number; y: number }) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -138,6 +142,7 @@ export function EditorLine({
   segTerm,
   errors,
   onClick,
+  onElementClick,
 }: EditorLineProps) {
   const hasErrors = errors.length > 0;
 
@@ -151,7 +156,7 @@ export function EditorLine({
 
   // If we have a parsed segment, render tokenised content; otherwise raw text.
   const content = segment
-    ? renderTokenised(segment, isLoop, errors, elemSep, segTerm)
+    ? renderTokenised(segment, isLoop, errors, elemSep, segTerm, lineNumber, onElementClick)
     : <span className="ds-editor-token ds-editor-token--raw">{rawText || '\u00a0'}</span>;
 
   return (
@@ -181,6 +186,8 @@ function renderTokenised(
   errors: ParseError[],
   elemSep: string,
   segTerm: string,
+  lineNumber: number,
+  onElementClick: EditorLineProps['onElementClick'],
 ) {
   const tokens = tokeniseLine(
     [segment.id, ...segment.elements].join(elemSep) + segTerm,
@@ -190,15 +197,30 @@ function renderTokenised(
 
   const hasErrors = errors.length > 0;
 
-  const spans = tokens.map((tok, i) => (
-    <span
-      key={i}
-      className={`ds-editor-token ds-editor-token--${tok.type}${hasErrors && tok.type === 'segId' ? ' ds-editor-token--error-underline' : ''}`}
-      style={tokenStyle(tok, segment, isLoop)}
-    >
-      {tok.text}
-    </span>
-  ));
+  const spans = tokens.map((tok, i) => {
+    const isClickable = onElementClick !== undefined && tok.elementIdx !== undefined;
+    return (
+      <span
+        key={i}
+        className={[
+          'ds-editor-token',
+          `ds-editor-token--${tok.type}`,
+          isClickable ? 'ds-editor-token--clickable' : '',
+          hasErrors && tok.type === 'segId' ? 'ds-editor-token--error-underline' : '',
+        ].filter(Boolean).join(' ')}
+        style={tokenStyle(tok, segment, isLoop)}
+        onClick={isClickable ? (e) => {
+          // Stop propagation so the parent line click handler doesn't fire and
+          // move the cursor (which would close the popover via outside-click).
+          e.stopPropagation();
+          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+          onElementClick!(lineNumber, tok.elementIdx!, { x: rect.left, y: rect.bottom });
+        } : undefined}
+      >
+        {tok.text}
+      </span>
+    );
+  });
 
   if (hasErrors) {
     return (
