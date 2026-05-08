@@ -7,18 +7,32 @@ export const metadata: Metadata = {
 };
 
 /**
- * Root layout — every route fills the viewport directly.
- *
- * The earlier portal-style nav has been removed; this app is single-purpose
- * (EDI Notepad 2026). Each route owns its own header / toolbar.
+ * Inline script that runs synchronously before paint to set the theme
+ * from localStorage (or system preference). Prevents a flash of the
+ * wrong theme on first load.
  */
+const themeBootScript = `
+  try {
+    var t = localStorage.getItem('np-theme');
+    if (t !== 'light' && t !== 'dark') {
+      t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+    document.documentElement.dataset.theme = t;
+  } catch (e) {
+    document.documentElement.dataset.theme = 'dark';
+  }
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+      </head>
       <body>{children}</body>
     </html>
   );

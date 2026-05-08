@@ -11,6 +11,7 @@ import { ConvertModal } from './ConvertModal';
 import { SummaryModal } from './SummaryModal';
 import { AckModal } from './AckModal';
 import { SplitModal } from './SplitModal';
+import { NewDocumentModal } from './NewDocumentModal';
 
 /** The detected EDI standard (null = empty editor, no document loaded). */
 export type DocumentStandard = 'X12' | 'EDIFACT' | 'TRADACOMS' | 'Unknown' | null;
@@ -117,6 +118,7 @@ export function DocumentStudio() {
   const [summaryOpen,   setSummaryOpen]   = useState(false);
   const [ackOpen,       setAckOpen]       = useState(false);
   const [splitOpen,     setSplitOpen]     = useState(false);
+  const [newDocOpen,    setNewDocOpen]    = useState(false);
   const [treePanelCollapsed, setTreePanelCollapsed] = useState(false);
 
   const activeDoc = useMemo(
@@ -216,6 +218,7 @@ export function DocumentStudio() {
         );
         return;
       }
+      case 'new': setNewDocOpen(true); return;
       case 'summary': setSummaryOpen(true); return;
       case 'ack': setAckOpen(true); return;
       case 'split': setSplitOpen(true); return;
@@ -335,6 +338,18 @@ export function DocumentStudio() {
         open={splitOpen}
         rawContent={activeDoc.rawContent}
         onClose={() => setSplitOpen(false)}
+      />
+
+      <NewDocumentModal
+        open={newDocOpen}
+        onClose={() => setNewDocOpen(false)}
+        onCreate={(text, title) => {
+          // Open the skeleton in a fresh tab so the user doesn't lose what they had
+          const fresh = createDoc({ initialContent: text, rawContent: text, title });
+          setDocs((prev) => [...prev, fresh]);
+          setActiveDocId(fresh.id);
+          setNewDocOpen(false);
+        }}
       />
     </div>
   );

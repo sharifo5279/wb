@@ -101,6 +101,15 @@ export default function CoveragePage() {
           </p>
         </header>
 
+        <div className="np-cov-source-banner" role="note">
+          <strong>About this dictionary.</strong> Entries are compiled from public X12 / UN/EDIFACT
+          / GS1 UK reference summaries, plus AI-assisted compilation for less-common transactions.
+          Element-level metadata is most accurate for the heavily-validated envelope and beginning
+          segments; many body segments are listed by ID only with minimal element detail. For
+          production validation, cross-check against the official ASC X12 publications, UN/CEFACT
+          message directories, or your trading partner&apos;s implementation guide.
+        </div>
+
         <CoverageTable title="ANSI X12" version="005010" entries={x12} />
         <CoverageTable title="UN/EDIFACT" version="D01B" entries={edifact} />
         <CoverageTable title="TRADACOMS" version="ANA001" entries={tradacoms} />
