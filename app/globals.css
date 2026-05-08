@@ -3860,3 +3860,134 @@ body {
   color: var(--wb-text-secondary);
   white-space: nowrap;
 }
+
+/* ─── Element edit popover ──────────────────────────────────────────────── */
+
+.ds-editor-token--clickable {
+  cursor: pointer;
+  border-radius: 2px;
+}
+.ds-editor-token--clickable:hover {
+  background: var(--wb-accent-tint);
+  outline: 1px solid var(--wb-accent-glow);
+}
+
+.ds-elemedit {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  background: var(--wb-bg-elevated);
+  border: 1px solid var(--wb-border);
+  border-radius: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  font-family: var(--wb-font-ui, 'Inter', sans-serif);
+}
+
+.ds-elemedit__header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--wb-border);
+}
+
+.ds-elemedit__pos {
+  font-family: var(--wb-font-mono, monospace);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--wb-accent-text);
+}
+
+.ds-elemedit__name {
+  font-size: 13px;
+  color: var(--wb-text-primary);
+}
+
+.ds-elemedit__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 14px;
+  background: var(--wb-bg-surface);
+  border-bottom: 1px solid var(--wb-border-sub);
+  font-size: 11px;
+  color: var(--wb-text-secondary);
+}
+
+.ds-elemedit__type {
+  font-family: var(--wb-font-mono, monospace);
+}
+
+.ds-elemedit__len {
+  font-family: var(--wb-font-mono, monospace);
+  color: var(--wb-text-muted);
+}
+
+.ds-elemedit__required {
+  color: #f5a623;
+  font-weight: 600;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-left: auto;
+}
+
+.ds-elemedit__body {
+  padding: 12px 14px;
+}
+
+.ds-elemedit__input,
+.ds-elemedit__select {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--wb-border);
+  border-radius: 4px;
+  background: var(--wb-bg-primary);
+  color: var(--wb-text-primary);
+  font-family: var(--wb-font-mono, monospace);
+  font-size: 13px;
+  outline: none;
+}
+
+.ds-elemedit__input:focus,
+.ds-elemedit__select:focus {
+  border-color: var(--wb-accent);
+  box-shadow: 0 0 0 2px var(--wb-accent-glow);
+}
+
+.ds-elemedit__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--wb-border-sub);
+}
+
+.ds-elemedit__btn {
+  height: 28px;
+  padding: 0 14px;
+  border: 1px solid var(--wb-border);
+  border-radius: 4px;
+  background: var(--wb-bg-surface);
+  color: var(--wb-text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.ds-elemedit__btn:hover {
+  background: var(--wb-accent-tint);
+  border-color: var(--wb-accent-glow);
+}
+
+.ds-elemedit__btn--primary {
+  background: var(--wb-accent);
+  border-color: var(--wb-accent);
+  color: white;
+}
+
+.ds-elemedit__btn--primary:hover {
+  background: #4f52d8;
+}
