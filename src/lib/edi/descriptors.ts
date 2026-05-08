@@ -1,6 +1,6 @@
 import type { SegmentDescriptor } from './types';
 import type { SegmentDef } from './dictionaries/types';
-import { getX12Segment, getEdifactSegment } from './dictionaries';
+import { getX12Segment, getEdifactSegment, getTradacomsSegment } from './dictionaries';
 
 // ─── Descriptor lookup (parser-facing) ───────────────────────────────────────
 //
@@ -46,4 +46,10 @@ export function getEdifactDescriptor(id: string): SegmentDescriptor {
   const def = getEdifactSegment(id);
   if (def) return toDescriptor(def);
   return { ...UNKNOWN_DESCRIPTOR, name: `Unknown EDIFACT Segment (${id})` };
+}
+
+export function getTradacomsDescriptor(id: string): SegmentDescriptor {
+  const def = getTradacomsSegment(id);
+  if (def) return toDescriptor(def);
+  return { ...UNKNOWN_DESCRIPTOR, name: `Unknown TRADACOMS Segment (${id})` };
 }

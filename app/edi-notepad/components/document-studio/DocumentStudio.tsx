@@ -12,7 +12,7 @@ import { AckModal } from './AckModal';
 import { SplitModal } from './SplitModal';
 
 /** The detected EDI standard (null = empty editor, no document loaded). */
-export type DocumentStandard = 'X12' | 'EDIFACT' | 'Unknown' | null;
+export type DocumentStandard = 'X12' | 'EDIFACT' | 'TRADACOMS' | 'Unknown' | null;
 
 /** The active view mode in the centre panel. */
 export type ViewMode = 'raw' | 'business' | 'hex';

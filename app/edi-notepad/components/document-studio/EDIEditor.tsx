@@ -339,8 +339,23 @@ export function EDIEditor({
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
+  const isEmpty = content.length === 0;
+
   return (
     <div className="ds-edi-editor" aria-label="EDI document editor">
+      {/* Empty-state hint — shown when the editor has no content. The overlay
+          is non-interactive (pointer-events: none); the underlying textarea
+          still receives focus and paste events. */}
+      {isEmpty && (
+        <div className="ds-edi-editor__hint" aria-hidden="true">
+          <div className="ds-edi-editor__hint-title">Paste an EDI document here</div>
+          <div className="ds-edi-editor__hint-sub">
+            Click anywhere then <kbd>Ctrl</kbd> + <kbd>V</kbd> (or <kbd>⌘</kbd> + <kbd>V</kbd>) — or use{' '}
+            <strong>Paste</strong> / <strong>Upload</strong> in the toolbar
+          </div>
+        </div>
+      )}
+
       {/* Scrollable display layer */}
       <div
         ref={scrollerRef}
