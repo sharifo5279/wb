@@ -1,6 +1,7 @@
 import type { ParseResult, EDIStandard } from "./types";
 import { parseX12 } from "./x12";
 import { parseEdifact } from "./edifact";
+import { parseTradacoms } from "./tradacoms";
 
 export { PARSE_DEBOUNCE_MS } from "./types";
 export type { ParseResult, Segment, SegmentNode, ParseError, EDIStandard } from "./types";
@@ -10,10 +11,9 @@ export type { ParseResult, Segment, SegmentNode, ParseError, EDIStandard } from 
 /**
  * Inspect the first 3 characters to determine the EDI standard.
  *
- * Rules:
  *   "ISA"       → "X12"
- *   "UNB"|"UNH" → "EDIFACT"
- *   (also "UNA" followed by UNB is EDIFACT)
+ *   "UNA"|"UNB"|"UNH" → "EDIFACT"
+ *   "STX"       → "TRADACOMS"
  *   anything else → "Unknown"
  */
 export function detectStandard(raw: string): EDIStandard {
@@ -21,9 +21,8 @@ export function detectStandard(raw: string): EDIStandard {
   const prefix = trimmed.slice(0, 3).toUpperCase();
 
   if (prefix === "ISA") return "X12";
-  if (prefix === "UNB" || prefix === "UNH") return "EDIFACT";
-  // UNA service string is optional preamble for EDIFACT
-  if (prefix === "UNA") return "EDIFACT";
+  if (prefix === "UNB" || prefix === "UNH" || prefix === "UNA") return "EDIFACT";
+  if (prefix === "STX") return "TRADACOMS";
 
   return "Unknown";
 }
@@ -43,11 +42,7 @@ export function parseEDI(raw: string): ParseResult {
   if (standard === "Unknown") {
     return { standard: "Unknown", segments: [], errors: [], hierarchy: [] };
   }
-
-  if (standard === "X12") {
-    return parseX12(raw.trimStart());
-  }
-
-  // EDIFACT
+  if (standard === "X12") return parseX12(raw.trimStart());
+  if (standard === "TRADACOMS") return parseTradacoms(raw.trimStart());
   return parseEdifact(raw.trimStart());
 }

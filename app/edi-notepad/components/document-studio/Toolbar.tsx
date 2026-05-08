@@ -24,6 +24,17 @@ interface ToolbarProps {
   onTool: (action: ToolAction) => void;
 }
 
+/** Read the system clipboard. Resolves to the text content or null on permission/empty. */
+async function readClipboard(): Promise<string | null> {
+  try {
+    if (!navigator.clipboard?.readText) return null;
+    const text = await navigator.clipboard.readText();
+    return text || null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Toolbar — top strip of EDI Notepad 2026.
  *
@@ -43,6 +54,23 @@ export function Toolbar({
   function handleUploadClick() {
     setUploadError(null);
     fileInputRef.current?.click();
+  }
+
+  async function handlePasteClick() {
+    setUploadError(null);
+    const text = await readClipboard();
+    if (text === null) {
+      setUploadError(
+        'Clipboard is empty or your browser blocked the read. Tip: click in the editor and press Ctrl+V (or ⌘V) instead.',
+      );
+      return;
+    }
+    if (text.length > MAX_FILE_BYTES) {
+      const mb = (text.length / MAX_FILE_BYTES).toFixed(1);
+      setUploadError(`Clipboard content too large (${mb} MB). Maximum size is 1 MB.`);
+      return;
+    }
+    onFileLoad(text);
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -93,6 +121,17 @@ export function Toolbar({
       <span className="ds-toolbar__sep" role="separator" aria-orientation="vertical" />
 
       <div className="ds-toolbar__group">
+
+        <button
+          type="button"
+          className="ds-toolbar__btn"
+          onClick={handlePasteClick}
+          aria-label="Paste EDI from clipboard"
+          title="Paste EDI from clipboard (or use Ctrl+V in the editor)"
+        >
+          <span className="ds-toolbar__icon" aria-hidden="true" style={icon('clipboard')} />
+          Paste
+        </button>
 
         <button
           type="button"

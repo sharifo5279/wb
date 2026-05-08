@@ -1,6 +1,6 @@
 // ─── Shared EDI types ────────────────────────────────────────────────────────
 
-export type EDIStandard = "X12" | "EDIFACT" | "Unknown";
+export type EDIStandard = "X12" | "EDIFACT" | "TRADACOMS" | "Unknown";
 
 /** Human-readable metadata for a segment type. */
 export interface SegmentDescriptor {

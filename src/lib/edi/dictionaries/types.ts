@@ -6,7 +6,7 @@
 // metadata (data type, length, optional code lists) and per-transaction
 // structure (which segments are required, max use).
 
-export type Standard = 'X12' | 'EDIFACT';
+export type Standard = 'X12' | 'EDIFACT' | 'TRADACOMS';
 
 /**
  * Element data types follow the X12/EDIFACT representation codes.

@@ -3075,3 +3075,50 @@ body {
   border-radius: 3px;
   border: 1px solid var(--wb-accent-glow);
 }
+
+/* ─── Editor empty-state hint ────────────────────────────────────────────── */
+
+.ds-edi-editor__hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px;
+  pointer-events: none;
+  z-index: 1;
+  color: var(--wb-text-muted);
+  text-align: center;
+  font-family: var(--wb-font-ui, 'Inter', sans-serif);
+}
+
+.ds-edi-editor__hint-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--wb-text-secondary);
+}
+
+.ds-edi-editor__hint-sub {
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 480px;
+}
+.ds-edi-editor__hint-sub strong {
+  color: var(--wb-text-secondary);
+  font-weight: 600;
+}
+.ds-edi-editor__hint-sub kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  margin: 0 2px;
+  border: 1px solid var(--wb-border);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  background: var(--wb-bg-elevated);
+  color: var(--wb-text-secondary);
+  font-family: var(--wb-font-mono, monospace);
+  font-size: 11px;
+  vertical-align: middle;
+}

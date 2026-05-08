@@ -3,6 +3,8 @@ import { X12_SEGMENTS } from './x12-segments';
 import { X12_TRANSACTIONS } from './x12-transactions';
 import { EDIFACT_SEGMENTS } from './edifact-segments';
 import { EDIFACT_MESSAGES } from './edifact-messages';
+import { TRADACOMS_SEGMENTS } from './tradacoms-segments';
+import { TRADACOMS_MESSAGES } from './tradacoms-messages';
 
 // ─── Public dictionary API ───────────────────────────────────────────────────
 
@@ -14,12 +16,20 @@ export function getEdifactSegment(id: string): SegmentDef | undefined {
   return EDIFACT_SEGMENTS[id];
 }
 
+export function getTradacomsSegment(id: string): SegmentDef | undefined {
+  return TRADACOMS_SEGMENTS[id];
+}
+
 export function getX12Transaction(setCode: string): TransactionDef | undefined {
   return X12_TRANSACTIONS[setCode];
 }
 
 export function getEdifactMessage(messageCode: string): TransactionDef | undefined {
   return EDIFACT_MESSAGES[messageCode];
+}
+
+export function getTradacomsMessage(messageCode: string): TransactionDef | undefined {
+  return TRADACOMS_MESSAGES[messageCode];
 }
 
 /**
@@ -73,6 +83,17 @@ export function listCoverage(): CoverageEntry[] {
       industry: txn.industry,
       segmentCoverage: txn.full ? 'full' : 'stub',
       elementCoverage: classifyElementCoverage(txn, getEdifactSegment),
+    });
+  }
+  for (const txn of Object.values(TRADACOMS_MESSAGES)) {
+    entries.push({
+      standard: txn.standard,
+      version: txn.version,
+      code: txn.code,
+      name: txn.name,
+      industry: txn.industry,
+      segmentCoverage: txn.full ? 'full' : 'stub',
+      elementCoverage: classifyElementCoverage(txn, getTradacomsSegment),
     });
   }
 
