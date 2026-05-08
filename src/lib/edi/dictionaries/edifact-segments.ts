@@ -151,4 +151,75 @@ export const EDIFACT_SEGMENTS: Record<string, SegmentDef> = {
     { name: 'Message Identifier',       required: false, type: 'AN', minLength: 1, maxLength: 35 },
     { name: 'Action Code',              required: false, type: 'ID', minLength: 1, maxLength: 3 },
   ]},
+
+  // ── Additional message body segments ──────────────────────────────────────
+  CPS: { id: 'CPS', name: 'Consignment Packing Sequence', elements: [
+    { name: 'Hierarchical Structure Level', required: true, type: 'AN', minLength: 1, maxLength: 12 },
+    { name: 'Hierarchical Parent ID',       required: false, type: 'AN', minLength: 1, maxLength: 12 },
+  ]},
+  FII: { id: 'FII', name: 'Financial Institution Information', elements: [
+    { name: 'Party Function Code',  required: true,  type: 'ID', minLength: 1, maxLength: 3 },
+    { name: 'Account Holder ID',    required: false, type: 'AN', minLength: 1, maxLength: 35 },
+    { name: 'Institution ID',       required: false, type: 'AN', minLength: 1, maxLength: 70 },
+    { name: 'Country',              required: false, type: 'ID', minLength: 2, maxLength: 3 },
+  ]},
+  BUS: { id: 'BUS', name: 'Business Function', elements: [
+    { name: 'Business Function Code',     required: false, type: 'ID', minLength: 1, maxLength: 3 },
+    { name: 'Business Description Code',  required: false, type: 'AN', minLength: 1, maxLength: 35 },
+  ]},
+  PAI: { id: 'PAI', name: 'Payment Instructions', elements: [
+    { name: 'Payment Conditions Code', required: true, type: 'AN', minLength: 1, maxLength: 35 },
+  ]},
+  FCA: { id: 'FCA', name: 'Financial Charges Allocation', elements: [
+    { name: 'Allocation Code', required: true, type: 'ID', minLength: 1, maxLength: 3 },
+  ]},
+  DOC: { id: 'DOC', name: 'Document/Message Details', elements: [
+    { name: 'Document Name Code',      required: true,  type: 'ID', minLength: 1, maxLength: 3 },
+    { name: 'Document Identifier',     required: false, type: 'AN', minLength: 1, maxLength: 70 },
+  ]},
+  ALI: { id: 'ALI', name: 'Additional Information', elements: [
+    { name: 'Country of Origin',  required: false, type: 'ID', minLength: 2, maxLength: 3 },
+    { name: 'Duty Regime Type',   required: false, type: 'ID', minLength: 1, maxLength: 3 },
+  ]},
+  GIN: { id: 'GIN', name: 'Goods Identity Number', elements: [
+    { name: 'Object Identification Code Qualifier', required: true, type: 'ID', minLength: 1, maxLength: 3 },
+    { name: 'Identity Number',                       required: true, type: 'AN', minLength: 1, maxLength: 35 },
+  ]},
+  EAN: { id: 'EAN', name: 'European Article Number', elements: [
+    { name: 'EAN', required: true, type: 'AN', minLength: 1, maxLength: 35 },
+  ]},
+  GIR: { id: 'GIR', name: 'Related Identification Numbers', elements: [
+    { name: 'Set Type Code', required: true, type: 'ID', minLength: 1, maxLength: 3 },
+  ]},
+  GDS: { id: 'GDS', name: 'Nature of Cargo', elements: [
+    { name: 'Nature of Cargo Code', required: true, type: 'ID', minLength: 1, maxLength: 3 },
+  ]},
+  GID: { id: 'GID', name: 'Goods Item Details', elements: [
+    { name: 'Goods Item Number', required: false, type: 'N0', minLength: 1, maxLength: 5 },
+    { name: 'Number of Packages', required: false, type: 'N0', minLength: 1, maxLength: 8 },
+  ]},
+  DIM: { id: 'DIM', name: 'Dimensions', elements: [
+    { name: 'Dimension Type Code Qualifier', required: true, type: 'ID', minLength: 1, maxLength: 3 },
+  ]},
+  GOR: { id: 'GOR', name: 'Governmental Requirements', elements: [
+    { name: 'Transport Movement Code', required: false, type: 'ID', minLength: 1, maxLength: 3 },
+  ]},
+  TPL: { id: 'TPL', name: 'Transport Placement', elements: [
+    { name: 'Transport Stage Code Qualifier', required: true, type: 'ID', minLength: 1, maxLength: 3 },
+  ]},
+  FTX: { id: 'FTX', name: 'Free Text', elements: [
+    { name: 'Text Subject Code Qualifier', required: true, type: 'ID', minLength: 1, maxLength: 3 },
+    { name: 'Text Function Code',           required: false, type: 'ID', minLength: 1, maxLength: 3 },
+  ]},
+  CNT: { id: 'CNT', name: 'Control Total', elements: [
+    { name: 'Control Total Type Code Qualifier', required: true, type: 'ID', minLength: 1, maxLength: 3 },
+    { name: 'Control Total Value',                required: true, type: 'R',  minLength: 1, maxLength: 18 },
+  ]},
+  STS: { id: 'STS', name: 'Status', elements: [
+    { name: 'Status Category Code Qualifier', required: false, type: 'ID', minLength: 1, maxLength: 3 },
+    { name: 'Status Description Code',         required: false, type: 'ID', minLength: 1, maxLength: 3 },
+  ]},
+  RCS: { id: 'RCS', name: 'Requirements and Conditions', elements: [
+    { name: 'Sector / Subject Identification', required: true, type: 'ID', minLength: 1, maxLength: 3 },
+  ]},
 };
