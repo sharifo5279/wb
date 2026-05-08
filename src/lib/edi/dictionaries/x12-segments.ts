@@ -580,4 +580,349 @@ export const X12_SEGMENTS: Record<string, SegmentDef> = {
     { name: 'Tax Type Code',     required: true,  type: 'ID', minLength: 2, maxLength: 2 },
     { name: 'Monetary Amount',   required: false, type: 'R',  minLength: 1, maxLength: 18 },
   ]},
+
+  // ── Beginning segments for additional transactions ───────────────────────
+  BCT: { id: 'BCT', name: 'Beginning Segment for Price/Sales Catalog', elements: [
+    { name: 'Catalog Purpose Code',  required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Catalog Number',        required: false, type: 'AN', minLength: 1, maxLength: 35 },
+    { name: 'Catalog Revision',      required: false, type: 'AN', minLength: 1, maxLength: 35 },
+    { name: 'Date',                  required: false, type: 'DT', minLength: 8, maxLength: 8 },
+  ]},
+  BIA: { id: 'BIA', name: 'Beginning Segment for Inventory Inquiry/Advice', elements: [
+    { name: 'Transaction Set Purpose', required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Report Type Code',        required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Reference Identification', required: false, type: 'AN', minLength: 1, maxLength: 30 },
+    { name: 'Date',                    required: true,  type: 'DT', minLength: 8, maxLength: 8 },
+  ]},
+  BCH: { id: 'BCH', name: 'Beginning Segment for Purchase Order Change', elements: [
+    { name: 'Transaction Set Purpose', required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Purchase Order Type',     required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Purchase Order Number',   required: true,  type: 'AN', minLength: 1, maxLength: 22 },
+    { name: 'Release Number',          required: false, type: 'AN', minLength: 1, maxLength: 30 },
+    { name: 'Change Order Sequence #', required: false, type: 'AN', minLength: 1, maxLength: 8 },
+    { name: 'Date',                    required: true,  type: 'DT', minLength: 8, maxLength: 8 },
+  ]},
+  BCA: { id: 'BCA', name: 'Beginning Segment for Purchase Order Change Acknowledgment', elements: [
+    { name: 'Transaction Set Purpose',  required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Acknowledgment Type Code', required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Purchase Order Type',      required: false, type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Purchase Order Number',    required: true,  type: 'AN', minLength: 1, maxLength: 22 },
+    { name: 'Date',                     required: true,  type: 'DT', minLength: 8, maxLength: 8 },
+  ]},
+  BRA: { id: 'BRA', name: 'Beginning Segment for Receiving Advice', elements: [
+    { name: 'Date',                    required: true,  type: 'DT', minLength: 8, maxLength: 8 },
+    { name: 'Receiving Advice ID',     required: true,  type: 'AN', minLength: 1, maxLength: 30 },
+    { name: 'Transaction Set Purpose', required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Receiving Type Code',     required: false, type: 'ID', minLength: 2, maxLength: 2 },
+  ]},
+  BSR: { id: 'BSR', name: 'Beginning Segment for Order Status Report', elements: [
+    { name: 'Transaction Set Purpose', required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Reference Identification', required: false, type: 'AN', minLength: 1, maxLength: 30 },
+    { name: 'Date',                    required: false, type: 'DT', minLength: 8, maxLength: 8 },
+  ]},
+  BFI: { id: 'BFI', name: 'Beginning Segment for Financial Information Reporting', elements: [
+    { name: 'Transaction Set Purpose',  required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Period of Calendar Code',  required: false, type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Account Type Code',        required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Date',                     required: false, type: 'DT', minLength: 8, maxLength: 8 },
+  ]},
+  BFR: { id: 'BFR', name: 'Beginning Segment for Planning Schedule / Financial Return', elements: [
+    { name: 'Transaction Set Purpose', required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Forecast Order Number',   required: false, type: 'AN', minLength: 1, maxLength: 30 },
+    { name: 'Release Number',          required: false, type: 'AN', minLength: 1, maxLength: 30 },
+    { name: 'Schedule Type Qualifier', required: false, type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Schedule Quantity Qual',  required: false, type: 'ID', minLength: 1, maxLength: 1 },
+    { name: 'Schedule Horizon Start',  required: false, type: 'DT', minLength: 8, maxLength: 8 },
+    { name: 'Schedule Horizon End',    required: false, type: 'DT', minLength: 8, maxLength: 8 },
+  ]},
+  BDA: { id: 'BDA', name: 'Beginning Segment for Debit Authorization', elements: [
+    { name: 'Transaction Set Purpose', required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Authorization Type Code', required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Reference Identification', required: false, type: 'AN', minLength: 1, maxLength: 30 },
+    { name: 'Date',                    required: true,  type: 'DT', minLength: 8, maxLength: 8 },
+  ]},
+  BCD: { id: 'BCD', name: 'Beginning Segment for Account Analysis', elements: [
+    { name: 'Cycle Begin Date',  required: true,  type: 'DT', minLength: 8, maxLength: 8 },
+    { name: 'Cycle End Date',    required: true,  type: 'DT', minLength: 8, maxLength: 8 },
+    { name: 'Reference ID',      required: false, type: 'AN', minLength: 1, maxLength: 30 },
+  ]},
+  // ── Common business segments referenced across transactions ──────────────
+  ALD: { id: 'ALD', name: 'Allowance/Charge', elements: [
+    { name: 'Allowance/Charge Indicator', required: true,  type: 'ID', minLength: 1, maxLength: 1 },
+    { name: 'Service/Promotion Code',     required: false, type: 'ID', minLength: 4, maxLength: 4 },
+    { name: 'Allowance/Charge Number',    required: false, type: 'AN', minLength: 1, maxLength: 12 },
+    { name: 'Method of Handling Code',    required: false, type: 'ID', minLength: 2, maxLength: 2 },
+  ]},
+  RCD: { id: 'RCD', name: 'Receiving Conditions', elements: [
+    { name: 'Quantity Received', required: false, type: 'R',  minLength: 1, maxLength: 15 },
+    { name: 'Unit of Measure',   required: false, type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Receiving Cond Code', required: false, type: 'ID', minLength: 2, maxLength: 2 },
+  ]},
+  FST: { id: 'FST', name: 'Forecast', elements: [
+    { name: 'Quantity',          required: true,  type: 'R',  minLength: 1, maxLength: 15 },
+    { name: 'Forecast Qualifier', required: true, type: 'ID', minLength: 1, maxLength: 1 },
+    { name: 'Forecast Timing',   required: false, type: 'ID', minLength: 1, maxLength: 1 },
+    { name: 'Date',              required: false, type: 'DT', minLength: 8, maxLength: 8 },
+  ]},
+  SDQ: { id: 'SDQ', name: 'Destination Quantity', elements: [
+    { name: 'Unit of Measure',   required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'ID Code Qualifier', required: false, type: 'ID', minLength: 1, maxLength: 2 },
+  ]},
+  CSH: { id: 'CSH', name: 'Sales Requirements', elements: [
+    { name: 'Sales Requirement Code', required: false, type: 'ID', minLength: 1, maxLength: 2 },
+    { name: 'Do Not Exceed Action',   required: false, type: 'ID', minLength: 1, maxLength: 1 },
+  ]},
+  DIS: { id: 'DIS', name: 'Discount Detail', elements: [
+    { name: 'Discount Type Code', required: true, type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Percent',            required: false, type: 'R', minLength: 1, maxLength: 6 },
+  ]},
+  INC: { id: 'INC', name: 'Installment Information', elements: [
+    { name: 'Terms Type Code',    required: true, type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Number of Periods',  required: true, type: 'N0', minLength: 1, maxLength: 4 },
+  ]},
+  LDT: { id: 'LDT', name: 'Lead Time', elements: [
+    { name: 'Lead Time Code', required: true, type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Number of Periods', required: true, type: 'N0', minLength: 1, maxLength: 6 },
+  ]},
+  CAD: { id: 'CAD', name: 'Carrier Detail', elements: [
+    { name: 'Transportation Method/Type', required: false, type: 'ID', minLength: 1, maxLength: 2 },
+    { name: 'Equipment Initial',          required: false, type: 'AN', minLength: 1, maxLength: 4 },
+    { name: 'Equipment Number',           required: false, type: 'AN', minLength: 1, maxLength: 10 },
+    { name: 'Standard Carrier Alpha',     required: false, type: 'ID', minLength: 2, maxLength: 4 },
+  ]},
+  IT3: { id: 'IT3', name: 'Additional Item Data', elements: [
+    { name: 'Number of Units Shipped', required: false, type: 'R', minLength: 1, maxLength: 10 },
+    { name: 'Unit of Measure',         required: false, type: 'ID', minLength: 2, maxLength: 2 },
+  ]},
+
+  // ── 852 Product Activity Data ────────────────────────────────────────────
+  XQ: { id: 'XQ', name: 'Reporting Period Date Range', elements: [
+    { name: 'Date Period Format Qualifier', required: true, type: 'ID', minLength: 2, maxLength: 3 },
+    { name: 'Date Period',                  required: true, type: 'AN', minLength: 1, maxLength: 35 },
+  ]},
+  GIS: { id: 'GIS', name: 'General Indicator', elements: [
+    { name: 'Code', required: true, type: 'ID', minLength: 1, maxLength: 2 },
+  ]},
+  ZA: { id: 'ZA', name: 'Product Activity', elements: [
+    { name: 'Product Activity Code', required: true, type: 'ID', minLength: 2, maxLength: 2 },
+  ]},
+  PRD: { id: 'PRD', name: 'Product Transfer / Resale', elements: [
+    { name: 'Quantity', required: false, type: 'R', minLength: 1, maxLength: 15 },
+  ]},
+
+  // ── 824 Application Advice ───────────────────────────────────────────────
+  BGN: { id: 'BGN', name: 'Beginning Segment', elements: [
+    { name: 'Transaction Set Purpose', required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Reference Identification', required: true, type: 'AN', minLength: 1, maxLength: 50 },
+    { name: 'Date',                    required: true,  type: 'DT', minLength: 8, maxLength: 8 },
+  ]},
+  OTI: { id: 'OTI', name: 'Original Transaction Identification', elements: [
+    { name: 'Application Acknowledge Code', required: true, type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Reference Identification Qualifier', required: true, type: 'ID', minLength: 2, maxLength: 3 },
+    { name: 'Reference Identification', required: true, type: 'AN', minLength: 1, maxLength: 50 },
+  ]},
+  TED: { id: 'TED', name: 'Technical Error Description', elements: [
+    { name: 'Application Error Condition Code', required: true, type: 'ID', minLength: 1, maxLength: 3 },
+    { name: 'Free Form Message',               required: false, type: 'AN', minLength: 1, maxLength: 60 },
+  ]},
+
+  // ── Transport (210, 211, 215, 990) ────────────────────────────────────────
+  B3: { id: 'B3', name: 'Beginning Segment for Carrier Invoice', elements: [
+    { name: 'Shipment Qualifier',     required: false, type: 'ID', minLength: 1, maxLength: 1 },
+    { name: 'Invoice Number',         required: true,  type: 'AN', minLength: 1, maxLength: 22 },
+    { name: 'Shipment Identification', required: false, type: 'AN', minLength: 1, maxLength: 30 },
+    { name: 'Standard Carrier Alpha', required: true,  type: 'ID', minLength: 2, maxLength: 4 },
+  ]},
+  BOL: { id: 'BOL', name: 'Beginning Segment for Bill of Lading', elements: [
+    { name: 'Standard Carrier Alpha', required: false, type: 'ID', minLength: 2, maxLength: 4 },
+    { name: 'Bill of Lading Number',  required: false, type: 'AN', minLength: 1, maxLength: 30 },
+  ]},
+  B1: { id: 'B1', name: 'Beginning Segment (Response/Booking)', elements: [
+    { name: 'Standard Carrier Alpha', required: false, type: 'ID', minLength: 2, maxLength: 4 },
+    { name: 'Shipment Identification', required: true, type: 'AN', minLength: 1, maxLength: 30 },
+    { name: 'Date',                    required: true, type: 'DT', minLength: 8, maxLength: 8 },
+  ]},
+  M10: { id: 'M10', name: 'Manifest Identifying Information', elements: [
+    { name: 'Standard Carrier Alpha', required: true, type: 'ID', minLength: 2, maxLength: 4 },
+    { name: 'Transportation Method', required: true, type: 'ID', minLength: 1, maxLength: 2 },
+  ]},
+  C3: { id: 'C3', name: 'Currency', elements: [
+    { name: 'Currency Code', required: true, type: 'ID', minLength: 3, maxLength: 3 },
+  ]},
+  L0: { id: 'L0', name: 'Line Item — Quantity and Weight', elements: [
+    { name: 'Lading Line Item Number', required: false, type: 'N0', minLength: 1, maxLength: 4 },
+    { name: 'Billed/Rated Quantity',   required: false, type: 'R',  minLength: 1, maxLength: 11 },
+    { name: 'Weight',                  required: false, type: 'R',  minLength: 1, maxLength: 10 },
+  ]},
+  L1: { id: 'L1', name: 'Rate and Charges', elements: [
+    { name: 'Lading Line Item Number', required: false, type: 'N0', minLength: 1, maxLength: 4 },
+    { name: 'Freight Rate',            required: false, type: 'R',  minLength: 1, maxLength: 9 },
+    { name: 'Charge',                  required: false, type: 'R',  minLength: 1, maxLength: 12 },
+  ]},
+  L3: { id: 'L3', name: 'Total Weight and Charges', elements: [
+    { name: 'Weight',  required: false, type: 'R', minLength: 1, maxLength: 10 },
+    { name: 'Charge',  required: false, type: 'R', minLength: 1, maxLength: 12 },
+  ]},
+  L4: { id: 'L4', name: 'Measurement', elements: [
+    { name: 'Length', required: false, type: 'R', minLength: 1, maxLength: 8 },
+  ]},
+  L9: { id: 'L9', name: 'Charge Detail', elements: [
+    { name: 'Special Charge Code', required: true, type: 'ID', minLength: 3, maxLength: 3 },
+    { name: 'Charge',              required: true, type: 'R',  minLength: 1, maxLength: 12 },
+  ]},
+  R3: { id: 'R3', name: 'Route Information', elements: [
+    { name: 'Standard Carrier Alpha', required: true, type: 'ID', minLength: 2, maxLength: 4 },
+    { name: 'Routing Sequence Code', required: false, type: 'ID', minLength: 1, maxLength: 2 },
+  ]},
+  M3: { id: 'M3', name: 'Release', elements: [
+    { name: 'Release Code', required: true, type: 'ID', minLength: 1, maxLength: 1 },
+  ]},
+  M5: { id: 'M5', name: 'Equipment Identification', elements: [
+    { name: 'Standard Carrier Alpha', required: false, type: 'ID', minLength: 2, maxLength: 4 },
+    { name: 'Equipment Initial',      required: false, type: 'AN', minLength: 1, maxLength: 4 },
+    { name: 'Equipment Number',       required: false, type: 'AN', minLength: 1, maxLength: 10 },
+  ]},
+  M7: { id: 'M7', name: 'Seal Numbers', elements: [
+    { name: 'Seal Number', required: true, type: 'AN', minLength: 2, maxLength: 15 },
+  ]},
+  M11: { id: 'M11', name: 'Manifest Bill of Lading Details', elements: [
+    { name: 'Bill of Lading Number',  required: false, type: 'AN', minLength: 1, maxLength: 30 },
+    { name: 'Number of Pieces',       required: false, type: 'N0', minLength: 1, maxLength: 7 },
+    { name: 'Weight',                 required: false, type: 'R',  minLength: 1, maxLength: 10 },
+  ]},
+  M12: { id: 'M12', name: 'In-bond Identifying Information', elements: [
+    { name: 'In-bond Code', required: false, type: 'ID', minLength: 2, maxLength: 2 },
+  ]},
+  V9: { id: 'V9', name: 'Event Detail', elements: [
+    { name: 'Event Code', required: true, type: 'ID', minLength: 3, maxLength: 3 },
+    { name: 'Event',      required: false, type: 'AN', minLength: 1, maxLength: 25 },
+  ]},
+  A4: { id: 'A4', name: 'Tender Status', elements: [
+    { name: 'Tender Decision Code', required: true, type: 'ID', minLength: 1, maxLength: 1 },
+  ]},
+  FA1: { id: 'FA1', name: 'Type of Financial Accounting Data', elements: [
+    { name: 'Agency Qualifier Code', required: true, type: 'ID', minLength: 2, maxLength: 2 },
+  ]},
+  X1: { id: 'X1', name: 'Export License', elements: [
+    { name: 'License Number', required: false, type: 'AN', minLength: 1, maxLength: 35 },
+  ]},
+
+  // ── Warehouse (943, 944, 947) ────────────────────────────────────────────
+  W17: { id: 'W17', name: 'Warehouse Receipt Identification', elements: [
+    { name: 'Reporting Code',         required: true, type: 'ID', minLength: 1, maxLength: 2 },
+    { name: 'Date',                   required: true, type: 'DT', minLength: 8, maxLength: 8 },
+    { name: 'Warehouse Receipt #',    required: true, type: 'AN', minLength: 1, maxLength: 22 },
+  ]},
+  W2: { id: 'W2', name: 'Equipment Identification', elements: [
+    { name: 'Equipment Initial',         required: false, type: 'AN', minLength: 1, maxLength: 4 },
+    { name: 'Equipment Number',          required: false, type: 'AN', minLength: 1, maxLength: 10 },
+  ]},
+  W11: { id: 'W11', name: 'Receipt Item Detail', elements: [
+    { name: 'Quantity Received', required: true,  type: 'R',  minLength: 1, maxLength: 10 },
+    { name: 'Unit of Measure',   required: true,  type: 'ID', minLength: 2, maxLength: 2 },
+  ]},
+  W13: { id: 'W13', name: 'Item Detail For Adjustment', elements: [
+    { name: 'Reason Code',     required: true, type: 'ID', minLength: 2, maxLength: 2 },
+    { name: 'Quantity',        required: true, type: 'R',  minLength: 1, maxLength: 10 },
+    { name: 'Unit of Measure', required: true, type: 'ID', minLength: 2, maxLength: 2 },
+  ]},
+  W14: { id: 'W14', name: 'Total Receipt Information', elements: [
+    { name: 'Total Quantity Received', required: true, type: 'N0', minLength: 1, maxLength: 10 },
+  ]},
+  W15: { id: 'W15', name: 'Warehouse Inventory Adjustment Identification', elements: [
+    { name: 'Reporting Code', required: true, type: 'ID', minLength: 1, maxLength: 2 },
+    { name: 'Date',           required: true, type: 'DT', minLength: 8, maxLength: 8 },
+  ]},
+
+  // ── 894 Delivery/Return Base Record ──────────────────────────────────────
+  G82: { id: 'G82', name: 'Delivery Identification', elements: [
+    { name: 'Delivery/Return Code', required: true, type: 'ID', minLength: 1, maxLength: 1 },
+    { name: 'Supplier Number',      required: true, type: 'AN', minLength: 2, maxLength: 10 },
+    { name: 'Receivers ID Qual',    required: true, type: 'ID', minLength: 1, maxLength: 2 },
+  ]},
+  G83: { id: 'G83', name: 'Line Item Detail — Description', elements: [
+    { name: 'Line Item Number', required: true,  type: 'N0', minLength: 1, maxLength: 6 },
+    { name: 'Quantity',         required: true,  type: 'R',  minLength: 1, maxLength: 10 },
+    { name: 'Unit of Measure',  required: false, type: 'ID', minLength: 2, maxLength: 2 },
+  ]},
+  G72: { id: 'G72', name: 'Allowances or Charges', elements: [
+    { name: 'Allowance/Charge Code', required: true, type: 'ID', minLength: 1, maxLength: 1 },
+    { name: 'Service/Promotion Code', required: false, type: 'ID', minLength: 4, maxLength: 4 },
+  ]},
+  G84: { id: 'G84', name: 'Delivery Totals', elements: [
+    { name: 'Total Quantity', required: true, type: 'R', minLength: 1, maxLength: 10 },
+  ]},
+  G85: { id: 'G85', name: 'Delivery Hash Total', elements: [
+    { name: 'Hash Total', required: true, type: 'AN', minLength: 1, maxLength: 12 },
+  ]},
+  G86: { id: 'G86', name: 'Signature', elements: [
+    { name: 'Signature', required: true, type: 'AN', minLength: 1, maxLength: 20 },
+  ]},
+
+  // ── Financial (821, 822, 823, 827, 828) ──────────────────────────────────
+  ENT: { id: 'ENT', name: 'Entity', elements: [
+    { name: 'Entity Identifier Code', required: true,  type: 'ID', minLength: 2, maxLength: 3 },
+    { name: 'Entity ID Qualifier',    required: false, type: 'ID', minLength: 1, maxLength: 2 },
+  ]},
+  ACT: { id: 'ACT', name: 'Account Identification', elements: [
+    { name: 'Account Identifier',   required: true,  type: 'AN', minLength: 1, maxLength: 35 },
+    { name: 'Account Type Qualifier', required: false, type: 'ID', minLength: 1, maxLength: 2 },
+  ]},
+  BAL: { id: 'BAL', name: 'Balance Detail', elements: [
+    { name: 'Balance Type Code', required: true, type: 'ID', minLength: 1, maxLength: 2 },
+    { name: 'Balance Amount',    required: true, type: 'R',  minLength: 1, maxLength: 18 },
+  ]},
+  BLR: { id: 'BLR', name: 'Beginning Segment for Lockbox Remittance', elements: [
+    { name: 'Lockbox Number', required: true, type: 'AN', minLength: 1, maxLength: 14 },
+  ]},
+  BAI: { id: 'BAI', name: 'Beginning Account Identification', elements: [
+    { name: 'Bank Account Number', required: true, type: 'AN', minLength: 1, maxLength: 35 },
+  ]},
+  BCO: { id: 'BCO', name: 'Beginning Check or Other', elements: [
+    { name: 'Check Number', required: true, type: 'AN', minLength: 1, maxLength: 16 },
+    { name: 'Date',         required: true, type: 'DT', minLength: 8, maxLength: 8 },
+  ]},
+  K3: { id: 'K3', name: 'File Information', elements: [
+    { name: 'Fixed Format Information', required: true, type: 'AN', minLength: 1, maxLength: 80 },
+  ]},
+  IDD: { id: 'IDD', name: 'Item Detail Description', elements: [
+    { name: 'Account Type Code', required: true, type: 'ID', minLength: 2, maxLength: 2 },
+  ]},
+  ITM: { id: 'ITM', name: 'Account Analysis Item Information', elements: [
+    { name: 'Account Analysis Item', required: true, type: 'AN', minLength: 1, maxLength: 35 },
+    { name: 'Quantity',              required: false, type: 'R',  minLength: 1, maxLength: 15 },
+  ]},
+  RAS: { id: 'RAS', name: 'Account Service Information', elements: [
+    { name: 'Service Type Code', required: true, type: 'ID', minLength: 2, maxLength: 4 },
+  ]},
+  ACR: { id: 'ACR', name: 'Account Creditor Reference', elements: [
+    { name: 'Creditor Reference', required: true, type: 'AN', minLength: 1, maxLength: 35 },
+  ]},
+  RAR: { id: 'RAR', name: 'Reason for Return', elements: [
+    { name: 'Reason Code', required: true, type: 'ID', minLength: 2, maxLength: 2 },
+  ]},
+  DAU: { id: 'DAU', name: 'Debit Authorization', elements: [
+    { name: 'Authorization Type', required: true, type: 'ID', minLength: 2, maxLength: 2 },
+  ]},
+  BAS: { id: 'BAS', name: 'Beginning Account Statement', elements: [
+    { name: 'Statement Identifier', required: true, type: 'AN', minLength: 1, maxLength: 35 },
+  ]},
+
+  // ── 999 Implementation Acknowledgment ────────────────────────────────────
+  IK3: { id: 'IK3', name: 'Implementation Data Segment Note', elements: [
+    { name: 'Segment ID',           required: true, type: 'ID', minLength: 2, maxLength: 3 },
+    { name: 'Segment Position',     required: true, type: 'N0', minLength: 1, maxLength: 10 },
+  ]},
+  IK4: { id: 'IK4', name: 'Implementation Data Element Note', elements: [
+    { name: 'Element Position', required: true,  type: 'N0', minLength: 1, maxLength: 4 },
+    { name: 'Data Element Reference', required: false, type: 'N0', minLength: 1, maxLength: 4 },
+    { name: 'Element Error Code', required: false, type: 'ID', minLength: 1, maxLength: 3 },
+  ]},
+  IK5: { id: 'IK5', name: 'Implementation Transaction Set Response Trailer', elements: [
+    { name: 'Transaction Set Ack Code', required: true, type: 'ID', minLength: 1, maxLength: 1 },
+  ]},
+  CTX: { id: 'CTX', name: 'Context', elements: [
+    { name: 'Context Identification', required: true, type: 'AN', minLength: 1, maxLength: 35 },
+  ]},
 };
+

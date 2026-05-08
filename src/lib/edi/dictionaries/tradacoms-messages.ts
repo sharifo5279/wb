@@ -54,18 +54,24 @@ export const TRADACOMS_MESSAGES: Record<string, TransactionDef> = {
     segments: [sr('MHD', true), sr('ACK', true, -1), sr('MTR', true)],
   },
   ACKTLR: {
-    code: 'ACKTLR', standard: STD, version: VER, full: false,
+    code: 'ACKTLR', standard: STD, version: VER, full: true,
     name: 'Acknowledgement Trailer', industry: 'All',
-    segments: [],
+    segments: [sr('MHD', true), sr('TLR', true), sr('MTR', true)],
   },
   DLHDR: {
-    code: 'DLHDR', standard: STD, version: VER, full: false,
+    code: 'DLHDR', standard: STD, version: VER, full: true,
     name: 'Delivery Notification Header', industry: 'Retail / Grocery',
-    segments: [],
+    segments: [
+      sr('MHD', true), sr('TYP', true), sr('SDT', false), sr('CDT', false),
+      sr('FIL', true), sr('MTR', true),
+    ],
   },
   DLDET: {
-    code: 'DLDET', standard: STD, version: VER, full: false,
+    code: 'DLDET', standard: STD, version: VER, full: true,
     name: 'Delivery Notification Detail', industry: 'Retail / Grocery',
-    segments: [],
+    segments: [
+      sr('MHD', true), sr('CLO', false), sr('ORD', false, -1), sr('DLD', false, -1),
+      sr('ITM', true, -1), sr('OTR', true), sr('MTR', true),
+    ],
   },
 };

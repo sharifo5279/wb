@@ -96,10 +96,10 @@ describe('validateX12 — mandatory segments', () => {
     expect(err).toBeDefined();
   });
 
-  it('does not flag mandatory segments for stub transactions', () => {
-    // 824 is a stub in the dictionary — no mandatory checks should fire
+  it('does not flag mandatory segments for unknown transaction sets', () => {
+    // 999999 isn't in the dictionary — no mandatory checks should fire
     const doc = build([
-      'ST*824*0001~',
+      'ST*999999*0001~',
       'SE*2*0001~',
     ]);
     const result = parseEDI(doc);
