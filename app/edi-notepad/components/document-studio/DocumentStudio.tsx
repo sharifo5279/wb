@@ -10,6 +10,9 @@ import { ConvertModal } from './ConvertModal';
 /** The detected EDI standard (null = empty editor, no document loaded). */
 export type DocumentStandard = 'X12' | 'EDIFACT' | 'Unknown' | null;
 
+/** The active view mode in the centre panel. */
+export type ViewMode = 'raw' | 'business' | 'hex';
+
 function flattenHierarchy(nodes: SegmentNode[]): ParseResult['segments'] {
   const out: ParseResult['segments'] = [];
   function walk(node: SegmentNode) {
@@ -26,8 +29,9 @@ function flattenHierarchy(nodes: SegmentNode[]): ParseResult['segments'] {
  *   ┌─────────────────────────────────────────┐
  *   │  Toolbar  (40px)                        │
  *   ├─────────────────┬───────────────────────┤
- *   │  Segment Tree   │   Document Editor     │
- *   │  (25%, toggle)  │   (flex-1)            │
+ *   │  Segment Tree   │   View Tabs           │
+ *   │  (25%, toggle)  │   Raw | Business | Hex│
+ *   │                 │   [active view body]  │
  *   │                 │   [statusbar 22px]    │
  *   └─────────────────┴───────────────────────┘
  */
@@ -37,11 +41,9 @@ export function DocumentStudio() {
   const [hierarchy,         setHierarchy]         = useState<SegmentNode[]>([]);
   const [errors,            setErrors]            = useState<ParseError[]>([]);
   const [activeSegmentLine, setActiveSegmentLine] = useState<number | null>(null);
+  const [rawContent,        setRawContent]        = useState('');
+  const [viewMode,          setViewMode]          = useState<ViewMode>('raw');
 
-  // Editor external content control:
-  //   null   → EDIEditor shows its built-in placeholder (initial app load)
-  //   ''     → empty editor (user confirmed Clear)
-  //   'text' → raw EDI from an uploaded file
   const [editorInitialContent, setEditorInitialContent] = useState<string | null>(null);
   const [editorKey, setEditorKey] = useState(0);
 
@@ -50,7 +52,7 @@ export function DocumentStudio() {
 
   const [treePanelCollapsed, setTreePanelCollapsed] = useState(false);
 
-  const parseResultForModal = useMemo((): ParseResult | null => {
+  const parseResult = useMemo((): ParseResult | null => {
     if (!hasValidDocument || !standard || standard === 'Unknown') return null;
     return {
       standard: standard as EDIStandard,
@@ -77,6 +79,7 @@ export function DocumentStudio() {
     setConvertOpen(false);
     setEditorInitialContent(text);
     setActiveSegmentLine(null);
+    setViewMode('raw'); // jump back to raw on a fresh document
     setEditorKey((k) => k + 1);
   }
 
@@ -90,6 +93,8 @@ export function DocumentStudio() {
     setHierarchy([]);
     setErrors([]);
     setActiveSegmentLine(null);
+    setRawContent('');
+    setViewMode('raw');
     setEditorInitialContent('');
     setEditorKey((k) => k + 1);
   }
@@ -97,6 +102,13 @@ export function DocumentStudio() {
   function handleConvert(format: 'json' | 'xml') {
     setConvertFormat(format);
     setConvertOpen(true);
+  }
+
+  function handleViewChange(next: ViewMode) {
+    // Business and Hex require a parsed/loaded document; ignore the request
+    // when there's nothing to show.
+    if ((next === 'business' || next === 'hex') && !rawContent) return;
+    setViewMode(next);
   }
 
   return (
@@ -126,15 +138,20 @@ export function DocumentStudio() {
           errors={errors}
           initialContent={editorInitialContent}
           activeSegmentLine={activeSegmentLine}
+          rawContent={rawContent}
+          parseResult={parseResult}
+          viewMode={viewMode}
+          onViewChange={handleViewChange}
           onDocumentLoaded={handleDocumentLoaded}
           onCursorChange={setActiveSegmentLine}
+          onRawChange={setRawContent}
         />
       </div>
 
       <ConvertModal
         open={convertOpen}
         initialFormat={convertFormat}
-        parseResult={parseResultForModal}
+        parseResult={parseResult}
         onClose={() => setConvertOpen(false)}
       />
     </div>

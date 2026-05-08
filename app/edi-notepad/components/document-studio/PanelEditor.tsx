@@ -1,53 +1,43 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import type { ParseError, SegmentNode } from '@/src/lib/edi/types';
-import type { DocumentStandard } from './DocumentStudio';
+import type { ParseError, ParseResult, SegmentNode } from '@/src/lib/edi/types';
+import type { DocumentStandard, ViewMode } from './DocumentStudio';
 import { EDIEditor } from './EDIEditor';
-
-// ─── Props ────────────────────────────────────────────────────────────────────
+import { HexView } from './HexView';
+import { BusinessView } from './business-view/BusinessView';
 
 interface PanelEditorProps {
   standard: DocumentStandard;
   hasValidDocument: boolean;
   errors: ParseError[];
-  /**
-   * Task 6 — initial text for the editor.
-   *   null   → show built-in PLACEHOLDER (fresh load)
-   *   ''     → empty editor (after Clear)
-   *   'text' → uploaded file content (parsed immediately on mount)
-   * PanelEditor is remounted (via key) when this changes from the parent.
-   */
   initialContent: string | null;
-  /** Line the user has clicked in the tree — editor should scroll to it (Task 5). */
   activeSegmentLine: number | null;
-  /** Called by Task 4/6 when a document is successfully parsed. */
+  rawContent: string;
+  parseResult: ParseResult | null;
+  viewMode: ViewMode;
+  onViewChange: (view: ViewMode) => void;
   onDocumentLoaded: (
     standard: DocumentStandard,
     hierarchy: SegmentNode[],
     errors: ParseError[],
   ) => void;
-  /** Called by Task 4 whenever the editor cursor moves (Task 5 bidirectional sync). */
   onCursorChange: (line: number) => void;
-  /** Task 8 — called after each debounced parse with the current raw EDI text. */
   onRawChange?: (raw: string) => void;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+const VIEW_TABS: { id: ViewMode; label: string }[] = [
+  { id: 'raw',      label: 'Raw' },
+  { id: 'business', label: 'Business' },
+  { id: 'hex',      label: 'Hex' },
+];
 
 /**
- * PanelEditor — centre panel (Document Editor), fills the remaining flex space.
+ * PanelEditor — centre panel.
  *
- * Layout (flex column):
- *   ┌───────────────────────────────────────┐
- *   │  .ds-panel__header  "Document Editor" │  32px
- *   ├───────────────────────────────────────┤
- *   │  .ds-panel__body                      │  flex-1
- *   │    <EDIEditor />                      │
- *   ├───────────────────────────────────────┤
- *   │  .ds-editor-statusbar                 │  22px
- *   │    Ln N, Col 1 · standard · N seg · E err
- *   └───────────────────────────────────────┘
+ * Header is a tab strip (Raw / Business / Hex). The active view's body fills
+ * the panel body; only Raw is editable. Business and Hex require a loaded
+ * document and are disabled until one is parsed.
  */
 export function PanelEditor({
   standard,
@@ -55,13 +45,16 @@ export function PanelEditor({
   errors,
   initialContent,
   activeSegmentLine,
+  rawContent,
+  parseResult,
+  viewMode,
+  onViewChange,
   onDocumentLoaded,
   onCursorChange,
   onRawChange,
 }: PanelEditorProps) {
   const errorCount = errors.length;
 
-  // Live cursor line tracked here for the status bar
   const [cursorLine,    setCursorLine]    = useState(1);
   const [segmentCount,  setSegmentCount]  = useState(0);
 
@@ -70,40 +63,69 @@ export function PanelEditor({
     onCursorChange(line);
   }, [onCursorChange]);
 
+  const viewDisabled = (id: ViewMode) =>
+    (id === 'business' || id === 'hex') && !hasValidDocument && !rawContent;
+
   return (
     <section
       className="ds-panel-editor"
-      aria-label="Document Editor panel"
+      aria-label="Document panel"
     >
-      {/* ── Panel header ── */}
-      <div className="ds-panel__header">
-        <span className="ds-panel__title">Document Editor</span>
+      <div className="ds-panel__header ds-panel__header--tabs">
+        <div className="ds-view-tabs" role="tablist" aria-label="Document view">
+          {VIEW_TABS.map((tab) => {
+            const active = viewMode === tab.id;
+            const disabled = viewDisabled(tab.id);
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                aria-controls={`ds-view-${tab.id}`}
+                disabled={disabled}
+                className={`ds-view-tab${active ? ' ds-view-tab--active' : ''}`}
+                onClick={() => !disabled && onViewChange(tab.id)}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* ── Editor body ── */}
       <div
         className="ds-panel__body"
         role="region"
-        aria-label="EDI document editor"
+        aria-label="Active document view"
       >
-        <EDIEditor
-          initialContent={initialContent}
-          activeSegmentLine={activeSegmentLine}
-          onDocumentLoaded={onDocumentLoaded}
-          onCursorChange={handleCursorChange}
-          onSegmentCountChange={setSegmentCount}
-          onRawChange={onRawChange}
-        />
+        {viewMode === 'raw' && (
+          <EDIEditor
+            initialContent={initialContent}
+            activeSegmentLine={activeSegmentLine}
+            onDocumentLoaded={onDocumentLoaded}
+            onCursorChange={handleCursorChange}
+            onSegmentCountChange={setSegmentCount}
+            onRawChange={onRawChange}
+          />
+        )}
+        {viewMode === 'business' && (
+          <BusinessView parseResult={parseResult} />
+        )}
+        {viewMode === 'hex' && (
+          <HexView text={rawContent} parseResult={parseResult} />
+        )}
       </div>
 
-      {/* ── Editor-level status bar ── */}
       <div
         className="ds-editor-statusbar"
         aria-label="Editor status"
         aria-live="polite"
         role="status"
       >
-        <span>Ln {cursorLine}, Col 1</span>
+        <span>
+          {viewMode === 'raw' ? `Ln ${cursorLine}, Col 1` : viewMode === 'hex' ? 'Hex view' : 'Business view'}
+        </span>
         <span className="ds-editor-statusbar__sep">·</span>
         <span>{hasValidDocument ? (standard ?? '—') : '—'}</span>
         <span className="ds-editor-statusbar__sep">·</span>
