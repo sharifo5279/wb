@@ -17,6 +17,11 @@ import type { TransactionDef } from './types';
 const STD = 'X12' as const;
 const VER = '005010';
 
+/** Versions our segment-level structure is known to apply to. Element-level
+ *  code lists may still vary between versions; the dictionary is curated against 005010. */
+const ALL_VERSIONS = ['004010', '005010', '006020', '007010', '008010'];
+const POST_4010 = ['005010', '006020', '007010', '008010'];
+
 /** Helper to keep entries terse. */
 function sr(id: string, required: boolean, maxUse: number = 1) {
   return { id, required, maxUse };
@@ -25,7 +30,7 @@ function sr(id: string, required: boolean, maxUse: number = 1) {
 export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
   // ── Supply Chain / Retail / CPG / Grocery / Cold Chain ───────────────────
   '810': {
-    code: '810', standard: STD, version: VER, full: true,
+    code: '810', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Invoice', industry: 'Supply Chain / Retail / CPG',
     segments: [
       sr('ST', true), sr('BIG', true), sr('NTE', false, -1), sr('CUR', false),
@@ -38,7 +43,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '820': {
-    code: '820', standard: STD, version: VER, full: true,
+    code: '820', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Payment Order / Remittance Advice', industry: 'Financial Services',
     segments: [
       sr('ST', true), sr('BPR', true), sr('TRN', false), sr('CUR', false),
@@ -92,7 +97,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '850': {
-    code: '850', standard: STD, version: VER, full: true,
+    code: '850', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Purchase Order', industry: 'Supply Chain / Retail / CPG / Manufacturing',
     segments: [
       sr('ST', true), sr('BEG', true), sr('CUR', false), sr('REF', false, -1),
@@ -117,7 +122,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '855': {
-    code: '855', standard: STD, version: VER, full: true,
+    code: '855', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Purchase Order Acknowledgment', industry: 'Supply Chain / Retail / CPG',
     segments: [
       sr('ST', true), sr('BAK', true), sr('CUR', false), sr('REF', false, -1),
@@ -128,7 +133,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '856': {
-    code: '856', standard: STD, version: VER, full: true,
+    code: '856', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Ship Notice / Manifest (ASN)', industry: 'Supply Chain / Logistics',
     segments: [
       sr('ST', true), sr('BSN', true), sr('DTM', false, -1), sr('HL', true, -1),
@@ -238,7 +243,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
 
   // ── Logistics / Transportation ───────────────────────────────────────────
   '204': {
-    code: '204', standard: STD, version: VER, full: true,
+    code: '204', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Motor Carrier Load Tender', industry: 'Logistics / Transportation',
     segments: [
       sr('ST', true), sr('B2', true), sr('B2A', true), sr('L11', false, -1),
@@ -276,7 +281,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '214': {
-    code: '214', standard: STD, version: VER, full: true,
+    code: '214', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Transportation Carrier Shipment Status Message', industry: 'Logistics / Transportation',
     segments: [
       sr('ST', true), sr('B10', true), sr('L11', false, -1), sr('K1', false, -1),
@@ -307,7 +312,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
 
   // ── Warehouse ────────────────────────────────────────────────────────────
   '940': {
-    code: '940', standard: STD, version: VER, full: true,
+    code: '940', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Warehouse Shipping Order', industry: 'Warehouse / Logistics',
     segments: [
       sr('ST', true), sr('W05', true), sr('N1', false, -1), sr('N2', false, -1),
@@ -338,7 +343,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '945': {
-    code: '945', standard: STD, version: VER, full: true,
+    code: '945', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Warehouse Shipping Advice', industry: 'Warehouse / Logistics',
     segments: [
       sr('ST', true), sr('W06', true), sr('N1', false, -1), sr('N9', false, -1),
@@ -406,7 +411,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
 
   // ── Acknowledgments ──────────────────────────────────────────────────────
   '997': {
-    code: '997', standard: STD, version: VER, full: true,
+    code: '997', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Functional Acknowledgment', industry: 'All',
     segments: [
       sr('ST', true), sr('AK1', true), sr('AK2', false, -1), sr('AK3', false, -1),
@@ -414,7 +419,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '999': {
-    code: '999', standard: STD, version: VER, full: true,
+    code: '999', standard: STD, version: VER, supportedVersions: POST_4010, full: true,
     name: 'Implementation Acknowledgment', industry: 'All',
     segments: [
       sr('ST', true), sr('AK1', true), sr('AK2', false, -1),

@@ -51,7 +51,15 @@ export interface TransactionDef {
   /** Standard-specific code: X12 set ("850") or EDIFACT message ("ORDERS"). */
   code: string;
   standard: Standard;
+  /** Primary version this entry is curated against. Used in URLs. */
   version: string;
+  /**
+   * Versions this entry's segment structure is known to apply to. Defaults to
+   * `[version]` when omitted. Use this to mark widely-deployed transactions
+   * whose envelope and beginning-segment structure are stable across multiple
+   * X12 / EDIFACT versions; element-level code lists may still vary.
+   */
+  supportedVersions?: string[];
   name: string;
   industry: string;
   purpose?: string;
@@ -64,6 +72,8 @@ export interface TransactionDef {
 export interface CoverageEntry {
   standard: Standard;
   version: string;
+  /** Versions this entry's structure is known to apply to. */
+  supportedVersions: string[];
   code: string;
   name: string;
   industry: string;

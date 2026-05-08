@@ -3812,3 +3812,51 @@ body {
   background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
 }
+
+/* ─── Version filter on coverage page ───────────────────────────────────── */
+
+.np-cov-filter-bar {
+  max-width: 980px;
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.np-cov-filter-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--wb-text-secondary);
+}
+
+.np-cov-filter-select {
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--wb-border);
+  border-radius: 4px;
+  background: var(--wb-bg-surface);
+  color: var(--wb-text-primary);
+  font-size: 12.5px;
+  font-family: var(--wb-font-mono, monospace);
+  outline: none;
+}
+
+.np-cov-filter-select:focus {
+  border-color: var(--wb-accent);
+  box-shadow: 0 0 0 2px var(--wb-accent-glow);
+}
+
+.np-cov-filter-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--wb-text-secondary);
+}
+.np-cov-filter-count strong { color: var(--wb-text-primary); }
+
+.np-cov-versions {
+  font-family: var(--wb-font-mono, monospace);
+  font-size: 11.5px;
+  color: var(--wb-text-secondary);
+  white-space: nowrap;
+}

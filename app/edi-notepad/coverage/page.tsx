@@ -1,76 +1,13 @@
 import Link from 'next/link';
 import { listCoverage } from '@/src/lib/edi/dictionaries';
-import type { CoverageEntry } from '@/src/lib/edi/dictionaries';
+import { CoverageView } from './CoverageView';
 
 export const metadata = {
   title: 'EDI Notepad 2026 — Standards Coverage',
 };
 
-/** Binary completeness: full segments + full element metadata = complete. */
-function isComplete(e: CoverageEntry): boolean {
-  return e.segmentCoverage === 'full' && e.elementCoverage === 'full';
-}
-
-function StatusPill({ kind, label }: { kind: 'complete' | 'incomplete'; label: string }) {
-  return <span className={`np-cov-pill np-cov-pill--${kind === 'complete' ? 'full' : 'partial'}`}>{label}</span>;
-}
-
-function CoverageRow({ entry }: { entry: CoverageEntry }) {
-  const href = `/edi-notepad/coverage/${entry.standard}/${entry.version}/${entry.code}`;
-  const complete = isComplete(entry);
-  return (
-    <tr className="np-cov-rowlink">
-      <td className="np-cov-code"><Link href={href}>{entry.code}</Link></td>
-      <td><Link href={href}>{entry.name}</Link></td>
-      <td className="np-cov-industry">{entry.industry}</td>
-      <td>
-        <StatusPill
-          kind={complete ? 'complete' : 'incomplete'}
-          label={complete ? 'Complete' : 'Incomplete'}
-        />
-      </td>
-    </tr>
-  );
-}
-
-function CoverageTable({ title, version, entries }: { title: string; version: string; entries: CoverageEntry[] }) {
-  const completeCount = entries.filter(isComplete).length;
-  return (
-    <section className="np-cov-section">
-      <header className="np-cov-section__header">
-        <h2 className="np-cov-section__title">{title}</h2>
-        <span className="np-cov-section__version">{version}</span>
-        <span className="np-cov-section__count">
-          {completeCount} of {entries.length} complete
-        </span>
-      </header>
-      <div className="np-cov-table-wrap">
-        <table className="np-cov-table">
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Name</th>
-              <th>Industry</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e) => (
-              <CoverageRow key={`${e.standard}-${e.version}-${e.code}`} entry={e} />
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
-
 export default function CoveragePage() {
   const all = listCoverage();
-  const x12 = all.filter((e) => e.standard === 'X12');
-  const edifact = all.filter((e) => e.standard === 'EDIFACT');
-  const tradacoms = all.filter((e) => e.standard === 'TRADACOMS');
-  const totalComplete = all.filter(isComplete).length;
 
   return (
     <div
@@ -93,18 +30,16 @@ export default function CoveragePage() {
             (data type, length, code lists) is missing for some segments.
           </p>
           <p className="np-cov-page__totals">
-            <strong>{totalComplete}</strong> of <strong>{all.length}</strong> transactions are
-            complete. Browse the underlying{' '}
+            Browse the underlying{' '}
             <Link href="/edi-notepad/coverage/segments" className="np-cov-inline-link">
               segment dictionary
             </Link>{' '}
-            for every defined segment across all three standards.
+            for every defined segment across all three standards. Filter by version to see which
+            transactions are known to apply to that release.
           </p>
         </header>
 
-        <CoverageTable title="ANSI X12" version="005010" entries={x12} />
-        <CoverageTable title="UN/EDIFACT" version="D01B" entries={edifact} />
-        <CoverageTable title="TRADACOMS" version="ANA001" entries={tradacoms} />
+        <CoverageView entries={all} />
       </div>
 
       <div className="wb-statusbar" aria-label="Notepad status">

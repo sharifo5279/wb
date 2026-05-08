@@ -109,6 +109,7 @@ export function listCoverage(): CoverageEntry[] {
     entries.push({
       standard: txn.standard,
       version: txn.version,
+      supportedVersions: txn.supportedVersions ?? [txn.version],
       code: txn.code,
       name: txn.name,
       industry: txn.industry,
@@ -120,6 +121,7 @@ export function listCoverage(): CoverageEntry[] {
     entries.push({
       standard: txn.standard,
       version: txn.version,
+      supportedVersions: txn.supportedVersions ?? [txn.version],
       code: txn.code,
       name: txn.name,
       industry: txn.industry,
@@ -131,6 +133,7 @@ export function listCoverage(): CoverageEntry[] {
     entries.push({
       standard: txn.standard,
       version: txn.version,
+      supportedVersions: txn.supportedVersions ?? [txn.version],
       code: txn.code,
       name: txn.name,
       industry: txn.industry,
