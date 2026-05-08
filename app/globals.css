@@ -3552,3 +3552,109 @@ body {
   color: var(--wb-text-muted);
   font-size: 13px;
 }
+
+/* ─── Document tabs (multi-doc) ──────────────────────────────────────────── */
+
+.ds-doctabs {
+  flex-shrink: 0;
+  height: 32px;
+  background: var(--wb-bg-primary);
+  border-bottom: 1px solid var(--wb-border);
+  overflow: hidden;
+}
+
+.ds-doctabs__row {
+  display: flex;
+  height: 100%;
+  align-items: stretch;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.ds-doctab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px 0 12px;
+  height: 100%;
+  min-width: 110px;
+  max-width: 220px;
+  background: var(--wb-bg-surface);
+  border-right: 1px solid var(--wb-border);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  position: relative;
+}
+
+.ds-doctab:hover:not(.ds-doctab--active) {
+  background: var(--wb-bg-elevated);
+}
+
+.ds-doctab--active {
+  background: var(--wb-bg-elevated);
+  color: var(--wb-text-primary);
+}
+
+.ds-doctab--active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--wb-accent);
+}
+
+.ds-doctab__title {
+  flex: 1;
+  font-family: var(--wb-font-ui, 'Inter', sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--wb-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ds-doctab--active .ds-doctab__title {
+  color: var(--wb-text-primary);
+  font-weight: 600;
+}
+
+.ds-doctab__close,
+.ds-doctabs__new {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--wb-text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s, color 0.12s;
+}
+
+.ds-doctab__close:hover,
+.ds-doctabs__new:hover {
+  background: var(--wb-accent-tint);
+  color: var(--wb-text-primary);
+}
+
+.ds-doctab__close-icon {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background-color: currentColor;
+  -webkit-mask: var(--icon-url) center / contain no-repeat;
+          mask: var(--icon-url) center / contain no-repeat;
+}
+
+.ds-doctabs__new {
+  width: 32px;
+  height: 32px;
+  border-radius: 0;
+  border-right: 1px solid var(--wb-border);
+}
