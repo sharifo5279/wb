@@ -54,7 +54,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '824': {
-    code: '824', standard: STD, version: VER, full: true,
+    code: '824', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Application Advice', industry: 'Supply Chain',
     segments: [
       sr('ST', true), sr('BGN', true), sr('REF', false, -1), sr('DTM', false, -1),
@@ -63,7 +63,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '830': {
-    code: '830', standard: STD, version: VER, full: true,
+    code: '830', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Planning Schedule with Release Capability', industry: 'Manufacturing / Supply Chain',
     segments: [
       sr('ST', true), sr('BFR', true), sr('REF', false, -1), sr('PER', false, -1),
@@ -75,7 +75,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '832': {
-    code: '832', standard: STD, version: VER, full: true,
+    code: '832', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Price/Sales Catalog', industry: 'Retail / CPG',
     segments: [
       sr('ST', true), sr('BCT', true), sr('REF', false, -1), sr('DTM', false, -1),
@@ -86,7 +86,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '846': {
-    code: '846', standard: STD, version: VER, full: true,
+    code: '846', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Inventory Inquiry / Advice', industry: 'Retail / CPG / Manufacturing',
     segments: [
       sr('ST', true), sr('BIA', true), sr('REF', false, -1), sr('DTM', false, -1),
@@ -112,7 +112,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '852': {
-    code: '852', standard: STD, version: VER, full: true,
+    code: '852', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Product Activity Data', industry: 'Retail / CPG',
     segments: [
       sr('ST', true), sr('XQ', true), sr('GIS', false, -1),
@@ -146,7 +146,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '860': {
-    code: '860', standard: STD, version: VER, full: true,
+    code: '860', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Purchase Order Change Request - Buyer Initiated', industry: 'Supply Chain',
     segments: [
       sr('ST', true), sr('BCH', true), sr('CUR', false), sr('REF', false, -1),
@@ -159,7 +159,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '861': {
-    code: '861', standard: STD, version: VER, full: true,
+    code: '861', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Receiving Advice / Acceptance Certificate', industry: 'Supply Chain / Logistics',
     segments: [
       sr('ST', true), sr('BRA', true), sr('REF', false, -1), sr('DTM', false, -1),
@@ -170,7 +170,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '865': {
-    code: '865', standard: STD, version: VER, full: true,
+    code: '865', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Purchase Order Change Acknowledgment - Seller Initiated', industry: 'Supply Chain',
     segments: [
       sr('ST', true), sr('BCA', true), sr('CUR', false), sr('REF', false, -1),
@@ -181,7 +181,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '869': {
-    code: '869', standard: STD, version: VER, full: true,
+    code: '869', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Order Status Inquiry', industry: 'Supply Chain',
     segments: [
       sr('ST', true), sr('BIG', true), sr('REF', false, -1), sr('DTM', false, -1),
@@ -190,7 +190,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '870': {
-    code: '870', standard: STD, version: VER, full: true,
+    code: '870', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Order Status Report', industry: 'Supply Chain',
     segments: [
       sr('ST', true), sr('BSR', true), sr('REF', false, -1), sr('DTM', false, -1),
@@ -199,7 +199,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '875': {
-    code: '875', standard: STD, version: VER, full: true,
+    code: '875', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Grocery Products Purchase Order', industry: 'Grocery / Cold Chain',
     segments: [
       sr('ST', true), sr('BIG', true), sr('NTE', false, -1), sr('REF', false, -1),
@@ -211,7 +211,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '876': {
-    code: '876', standard: STD, version: VER, full: true,
+    code: '876', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Grocery Products Purchase Order Change', industry: 'Grocery / Cold Chain',
     segments: [
       sr('ST', true), sr('BCH', true), sr('REF', false, -1), sr('NTE', false, -1),
@@ -220,7 +220,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '880': {
-    code: '880', standard: STD, version: VER, full: true,
+    code: '880', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Grocery Products Invoice', industry: 'Grocery / Cold Chain',
     segments: [
       sr('ST', true), sr('BIG', true), sr('NTE', false, -1), sr('REF', false, -1),
@@ -232,7 +232,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '894': {
-    code: '894', standard: STD, version: VER, full: true,
+    code: '894', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Delivery / Return Base Record', industry: 'Grocery / Cold Chain',
     segments: [
       sr('ST', true), sr('G82', true), sr('REF', false, -1), sr('N1', false, -1),
@@ -255,7 +255,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '210': {
-    code: '210', standard: STD, version: VER, full: true,
+    code: '210', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Motor Carrier Freight Details and Invoice', industry: 'Logistics / Transportation',
     segments: [
       sr('ST', true), sr('B3', true), sr('C3', false), sr('ITD', false),
@@ -267,7 +267,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '211': {
-    code: '211', standard: STD, version: VER, full: true,
+    code: '211', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Motor Carrier Bill of Lading', industry: 'Logistics / Transportation',
     segments: [
       sr('ST', true), sr('BOL', true), sr('X1', false), sr('MS3', false),
@@ -291,7 +291,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '215': {
-    code: '215', standard: STD, version: VER, full: true,
+    code: '215', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Motor Carrier Pick-up Manifest', industry: 'Logistics / Transportation',
     segments: [
       sr('ST', true), sr('M10', true), sr('N9', false, -1), sr('N1', false, -1),
@@ -301,7 +301,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '990': {
-    code: '990', standard: STD, version: VER, full: true,
+    code: '990', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Response to a Load Tender', industry: 'Logistics / Transportation',
     segments: [
       sr('ST', true), sr('B1', true), sr('A4', true),
@@ -323,7 +323,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '943': {
-    code: '943', standard: STD, version: VER, full: true,
+    code: '943', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Warehouse Stock Transfer Shipment Advice', industry: 'Warehouse',
     segments: [
       sr('ST', true), sr('W06', true), sr('N1', false, -1), sr('G62', false, -1),
@@ -333,7 +333,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '944': {
-    code: '944', standard: STD, version: VER, full: true,
+    code: '944', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Warehouse Stock Transfer Receipt Advice', industry: 'Warehouse',
     segments: [
       sr('ST', true), sr('W17', true), sr('N1', false, -1), sr('N9', false, -1),
@@ -353,7 +353,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '947': {
-    code: '947', standard: STD, version: VER, full: true,
+    code: '947', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Warehouse Inventory Adjustment Advice', industry: 'Warehouse',
     segments: [
       sr('ST', true), sr('W15', true), sr('W2', false), sr('N1', false, -1),
@@ -364,7 +364,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
 
   // ── Financial Services (additional) ──────────────────────────────────────
   '821': {
-    code: '821', standard: STD, version: VER, full: true,
+    code: '821', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Financial Information Reporting', industry: 'Financial Services',
     segments: [
       sr('ST', true), sr('BFI', true), sr('REF', false, -1), sr('DTM', false, -1),
@@ -374,7 +374,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '822': {
-    code: '822', standard: STD, version: VER, full: true,
+    code: '822', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Account Analysis', industry: 'Financial Services',
     segments: [
       sr('ST', true), sr('BCD', true), sr('N1', false, -1), sr('BAS', false),
@@ -383,7 +383,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '823': {
-    code: '823', standard: STD, version: VER, full: true,
+    code: '823', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Lockbox', industry: 'Financial Services',
     segments: [
       sr('ST', true), sr('LX', true, -1), sr('BLR', true), sr('BAI', false),
@@ -392,7 +392,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '827': {
-    code: '827', standard: STD, version: VER, full: true,
+    code: '827', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Financial Return Notice', industry: 'Financial Services',
     segments: [
       sr('ST', true), sr('BFR', true), sr('N1', false, -1), sr('N3', false, -1),
@@ -400,7 +400,7 @@ export const X12_TRANSACTIONS: Record<string, TransactionDef> = {
     ],
   },
   '828': {
-    code: '828', standard: STD, version: VER, full: true,
+    code: '828', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Debit Authorization', industry: 'Financial Services',
     segments: [
       sr('ST', true), sr('BDA', true), sr('REF', false, -1), sr('DTM', false, -1),
