@@ -2,39 +2,38 @@
 
 import { useEffect, useState } from 'react';
 import type React from 'react';
+import { getTheme, toggleTheme, type Theme } from './theme';
 
 const CDN = 'https://cdn.jsdelivr.net/npm/lucide-static@latest/icons';
-
-type Theme = 'light' | 'dark';
 
 function icon(name: string): React.CSSProperties {
   return { '--icon-url': `url(${CDN}/${name}.svg)` } as React.CSSProperties;
 }
 
 /**
- * ThemeToggle — small icon button that flips the page between light and
- * dark mode. Initial value is read from `document.documentElement.dataset.theme`,
- * which is set by an inline script in app/layout.tsx so there's no flash of
- * wrong theme before hydration. Persists to localStorage on toggle.
+ * ThemeToggle — flips between light and dark mode. Observes the `data-theme`
+ * attribute on <html> via MutationObserver so the icon stays in sync when
+ * the theme is changed elsewhere (e.g., from the command palette).
  */
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setLocalTheme] = useState<Theme>('dark');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const current = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
-    setTheme(current);
+    setLocalTheme(getTheme());
     setMounted(true);
+
+    const root = document.documentElement;
+    const obs = new MutationObserver(() => setLocalTheme(getTheme()));
+    obs.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => obs.disconnect();
   }, []);
 
-  function toggle() {
-    const next: Theme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
-    document.documentElement.dataset.theme = next;
-    try { localStorage.setItem('np-theme', next); } catch { /* ignore */ }
+  function handleClick() {
+    toggleTheme();
+    // Local state updates via the MutationObserver above.
   }
 
-  // Render an aria-only placeholder during SSR to keep layout stable.
   const iconName = theme === 'dark' ? 'sun' : 'moon';
   const label = theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
 
@@ -42,7 +41,7 @@ export function ThemeToggle() {
     <button
       type="button"
       className="ds-toolbar__btn ds-theme-toggle"
-      onClick={toggle}
+      onClick={handleClick}
       aria-label={label}
       title={label}
       suppressHydrationWarning

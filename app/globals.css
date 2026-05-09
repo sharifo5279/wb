@@ -334,6 +334,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 /* ── Toolbar ──────────────────────────────────────────────────────────────── */
@@ -4182,4 +4183,189 @@ body {
     font-size: 10.5px;
     padding: 4px 8px;
   }
+}
+
+/* ─── Command palette (Ctrl+Shift+P / ⌘K) ───────────────────────────────── */
+
+.ds-cmdpal__overlay {
+  align-items: flex-start;
+  padding-top: 12vh;
+}
+
+.ds-cmdpal {
+  display: flex;
+  flex-direction: column;
+  width: min(640px, calc(100vw - 32px));
+  max-height: 70vh;
+  background: var(--wb-bg-elevated);
+  border: 1px solid var(--wb-border);
+  border-radius: 8px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  font-family: var(--wb-font-ui, 'Inter', sans-serif);
+  overflow: hidden;
+}
+
+.ds-cmdpal__searchrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--wb-border);
+}
+
+.ds-cmdpal__searchicon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background-color: var(--wb-text-muted);
+  -webkit-mask: var(--icon-url) center / contain no-repeat;
+          mask: var(--icon-url) center / contain no-repeat;
+  flex-shrink: 0;
+}
+
+.ds-cmdpal__input {
+  flex: 1;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--wb-text-primary);
+  font-size: 14px;
+  font-family: var(--wb-font-ui, 'Inter', sans-serif);
+  outline: none;
+}
+
+.ds-cmdpal__input::placeholder {
+  color: var(--wb-text-muted);
+}
+
+.ds-cmdpal__count {
+  font-family: var(--wb-font-mono, monospace);
+  font-size: 11px;
+  color: var(--wb-text-muted);
+  flex-shrink: 0;
+}
+
+.ds-cmdpal__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+  scrollbar-width: thin;
+}
+
+.ds-cmdpal__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 14px;
+  border: none;
+  background: transparent;
+  color: var(--wb-text-primary);
+  text-align: left;
+  font-family: var(--wb-font-ui, 'Inter', sans-serif);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.08s, color 0.08s;
+}
+
+.ds-cmdpal__row--active {
+  background: var(--wb-accent-tint);
+  color: var(--wb-accent-text);
+}
+
+.ds-cmdpal__cat {
+  flex-shrink: 0;
+  width: 70px;
+  padding: 1px 6px;
+  border: 1px solid var(--wb-border);
+  border-radius: 3px;
+  background: var(--wb-bg-surface);
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--wb-text-secondary);
+}
+
+.ds-cmdpal__row--active .ds-cmdpal__cat {
+  border-color: var(--wb-accent-glow);
+  color: var(--wb-accent-text);
+}
+
+.ds-cmdpal__label {
+  flex: 1;
+}
+
+.ds-cmdpal__sc {
+  font-family: var(--wb-font-mono, monospace);
+  font-size: 11px;
+  color: var(--wb-text-muted);
+  flex-shrink: 0;
+}
+
+.ds-cmdpal__empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--wb-text-muted);
+  font-size: 13px;
+}
+
+.ds-cmdpal__hint {
+  display: flex;
+  gap: 12px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--wb-border);
+  background: var(--wb-bg-surface);
+  font-size: 11px;
+  color: var(--wb-text-muted);
+}
+
+.ds-cmdpal__hint kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  margin: 0 2px;
+  border: 1px solid var(--wb-border);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  background: var(--wb-bg-elevated);
+  color: var(--wb-text-secondary);
+  font-family: var(--wb-font-mono, monospace);
+  font-size: 10.5px;
+  vertical-align: middle;
+}
+
+/* ─── Drag-and-drop overlay ────────────────────────────────────────────── */
+
+.ds-drop-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 999;
+  background: rgba(99, 102, 241, 0.18);
+  border: 3px dashed var(--wb-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+
+.ds-drop-overlay__inner {
+  text-align: center;
+  font-family: var(--wb-font-ui, 'Inter', sans-serif);
+  color: var(--wb-text-primary);
+}
+
+.ds-drop-overlay__title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--wb-accent-text);
+}
+
+.ds-drop-overlay__sub {
+  font-family: var(--wb-font-mono, monospace);
+  font-size: 12px;
+  color: var(--wb-text-secondary);
 }

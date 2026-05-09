@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { SegmentNode, ParseError, ParseResult, EDIStandard } from '@/src/lib/edi/types';
 import { incrementControlNumbers } from '@/src/lib/edi/control-numbers';
 import {
@@ -20,6 +20,9 @@ import { SummaryModal } from './SummaryModal';
 import { AckModal } from './AckModal';
 import { SplitModal } from './SplitModal';
 import { NewDocumentModal } from './NewDocumentModal';
+import { CommandPalette, type Command } from './CommandPalette';
+import { loadSession, saveSession } from './session';
+import { toggleTheme } from './theme';
 
 /** The detected EDI standard (null = empty editor, no document loaded). */
 export type DocumentStandard = 'X12' | 'EDIFACT' | 'TRADACOMS' | 'Unknown' | null;
@@ -127,7 +130,10 @@ export function DocumentStudio() {
   const [ackOpen,       setAckOpen]       = useState(false);
   const [splitOpen,     setSplitOpen]     = useState(false);
   const [newDocOpen,    setNewDocOpen]    = useState(false);
+  const [paletteOpen,   setPaletteOpen]   = useState(false);
   const [treePanelCollapsed, setTreePanelCollapsed] = useState(false);
+  const [dropping, setDropping] = useState(false);
+  const sessionLoaded = useRef(false);
 
   const activeDoc = useMemo(
     () => docs.find((d) => d.id === activeDocId) ?? docs[0],
@@ -243,6 +249,146 @@ export function DocumentStudio() {
     patchActiveDoc({ viewMode: next });
   }
 
+  // ── Session persistence ────────────────────────────────────────────────────
+
+  // Restore session on mount, exactly once.
+  useEffect(() => {
+    if (sessionLoaded.current) return;
+    sessionLoaded.current = true;
+
+    const snap = loadSession();
+    if (!snap || snap.docs.length === 0) return;
+
+    const restored: DocState[] = snap.docs.map((d) => ({
+      id: d.id,
+      title: d.title,
+      // Pass rawContent as initialContent so the editor parses it on mount.
+      initialContent: d.rawContent === '' ? '' : d.rawContent,
+      rawContent: d.rawContent,
+      standard: null,
+      hasValidDocument: false,
+      hierarchy: [],
+      errors: [],
+      activeSegmentLine: null,
+      viewMode: 'raw',
+      editorKey: 0,
+    }));
+    setDocs(restored);
+    setActiveDocId(
+      restored.find((d) => d.id === snap.activeDocId) ? snap.activeDocId : restored[0].id,
+    );
+    setTreePanelCollapsed(snap.treePanelCollapsed);
+  }, []);
+
+  // Save session whenever docs / active id / tree collapsed changes.
+  useEffect(() => {
+    if (!sessionLoaded.current) return;
+    saveSession({
+      docs: docs.map((d) => ({ id: d.id, title: d.title, rawContent: d.rawContent })),
+      activeDocId,
+      treePanelCollapsed,
+    });
+  }, [docs, activeDocId, treePanelCollapsed]);
+
+  // ── Command palette: Ctrl+Shift+P / ⌘K listener ───────────────────────────
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const meta = e.ctrlKey || e.metaKey;
+      if (meta && e.shiftKey && (e.key === 'P' || e.key === 'p')) {
+        e.preventDefault();
+        setPaletteOpen(true);
+        return;
+      }
+      if (meta && !e.shiftKey && (e.key === 'k' || e.key === 'K')) {
+        // Skip if we're typing in an input (let the input handle it).
+        const target = e.target as HTMLElement | null;
+        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+          // Allow Ctrl+K from the editor textarea too — it's a high-value shortcut.
+        }
+        e.preventDefault();
+        setPaletteOpen(true);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // ── Drag-and-drop file upload ─────────────────────────────────────────────
+
+  function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+    if (!Array.from(e.dataTransfer.types).includes('Files')) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    setDropping(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent<HTMLDivElement>) {
+    // Only clear if leaving the layout entirely (not entering a child).
+    if (e.currentTarget === e.target) setDropping(false);
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setDropping(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    if (file.size > 1024 * 1024) {
+      window.alert(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is 1 MB.`);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result as string;
+      handleFileLoad(text);
+    };
+    reader.readAsText(file);
+  }
+
+  // ── Command palette commands ──────────────────────────────────────────────
+
+  const fileInputRefForPalette = useRef<HTMLInputElement>(null);
+
+  const commands: Command[] = useMemo(() => {
+    const hasDoc = activeDoc.hasValidDocument;
+    const hasContent = activeDoc.rawContent.length > 0;
+
+    return [
+      // File
+      { id: 'new', category: 'File', label: 'New EDI Document…', shortcut: '', action: () => setNewDocOpen(true) },
+      { id: 'paste', category: 'File', label: 'Paste from Clipboard', shortcut: 'Ctrl+V', action: async () => {
+        try {
+          const text = await navigator.clipboard.readText();
+          if (text) handleFileLoad(text);
+        } catch { window.alert('Clipboard read blocked. Click in the editor and press Ctrl+V instead.'); }
+      }},
+      { id: 'upload', category: 'File', label: 'Upload File…', action: () => fileInputRefForPalette.current?.click() },
+      { id: 'clear', category: 'File', label: 'Clear Active Document', action: handleClear, enabled: () => hasDoc },
+      { id: 'newtab', category: 'File', label: 'New Tab', action: handleNewDoc },
+      { id: 'closetab', category: 'File', label: 'Close Active Tab', action: () => handleCloseDoc(activeDocId) },
+
+      // View
+      { id: 'view-raw',      category: 'View', label: 'Switch to Raw View',      action: () => handleViewChange('raw') },
+      { id: 'view-business', category: 'View', label: 'Switch to Business View', action: () => handleViewChange('business'), enabled: () => hasContent },
+      { id: 'view-hex',      category: 'View', label: 'Switch to Hex View',      action: () => handleViewChange('hex'),      enabled: () => hasContent },
+      { id: 'theme',         category: 'View', label: 'Toggle Light / Dark Theme', action: () => { toggleTheme(); } },
+      { id: 'tree-collapse', category: 'View', label: treePanelCollapsed ? 'Expand Segment Tree' : 'Collapse Segment Tree', action: () => setTreePanelCollapsed((v) => !v) },
+
+      // Tools
+      { id: 'convert-json', category: 'Tools', label: 'Convert to JSON', action: () => handleConvert('json'), enabled: () => hasDoc },
+      { id: 'convert-xml',  category: 'Tools', label: 'Convert to XML',  action: () => handleConvert('xml'),  enabled: () => hasDoc },
+      { id: 'increment',    category: 'Tools', label: 'Increment Control Numbers', action: () => handleTool('increment'), enabled: () => hasContent },
+      { id: 'summary',      category: 'Tools', label: 'Show Summary Report',       action: () => handleTool('summary'),   enabled: () => hasDoc },
+      { id: 'ack',          category: 'Tools', label: 'Generate Acknowledgment',   action: () => handleTool('ack'),       enabled: () => hasDoc },
+      { id: 'split',        category: 'Tools', label: 'Split Interchanges',        action: () => handleTool('split'),     enabled: () => hasContent },
+      { id: 'print',        category: 'Tools', label: 'Print Business View',       action: () => handleTool('print'),     enabled: () => hasDoc },
+
+      // Navigate
+      { id: 'goto-coverage', category: 'Navigate', label: 'Open Standards Coverage', action: () => { window.location.href = '/edi-notepad/coverage'; } },
+      { id: 'goto-segments', category: 'Navigate', label: 'Open Segment Dictionary', action: () => { window.location.href = '/edi-notepad/coverage/segments'; } },
+    ];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDoc.hasValidDocument, activeDoc.rawContent, treePanelCollapsed, activeDocId]);
+
   function handleSegmentAction(action: SegmentAction, line: number, segmentId: string) {
     if (!activeDoc.rawContent) return;
     const { elemSep } = detectDelimiters(activeDoc.rawContent);
@@ -309,7 +455,41 @@ export function DocumentStudio() {
   }
 
   return (
-    <div className="ds-layout">
+    <div
+      className="ds-layout"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {dropping && (
+        <div className="ds-drop-overlay" aria-hidden="true">
+          <div className="ds-drop-overlay__inner">
+            <div className="ds-drop-overlay__title">Drop EDI file to load</div>
+            <div className="ds-drop-overlay__sub">.edi · .txt · .x12 · .dat</div>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden input used by the command palette's "Upload File…" command. */}
+      <input
+        ref={fileInputRefForPalette}
+        type="file"
+        accept=".edi,.txt,.x12,.dat"
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          if (file.size > 1024 * 1024) {
+            window.alert(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is 1 MB.`);
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = () => handleFileLoad(reader.result as string);
+          reader.readAsText(file);
+          e.target.value = '';
+        }}
+      />
+
       <DocTabs
         docs={docs}
         activeDocId={activeDoc.id}
@@ -378,6 +558,12 @@ export function DocumentStudio() {
         open={splitOpen}
         rawContent={activeDoc.rawContent}
         onClose={() => setSplitOpen(false)}
+      />
+
+      <CommandPalette
+        open={paletteOpen}
+        commands={commands}
+        onClose={() => setPaletteOpen(false)}
       />
 
       <NewDocumentModal
