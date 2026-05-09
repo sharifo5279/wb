@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import type { SegmentDef, ElementDef } from '@/src/lib/edi/dictionaries';
 
 interface SegmentDetailProps {
@@ -85,42 +85,59 @@ export function SegmentDetail({ segRef, def, position }: SegmentDetailProps) {
             </thead>
             <tbody>
               {elements.map((el, i) => (
-                <tr key={i}>
-                  <td className="np-cov-eltable__pos">{(i + 1).toString().padStart(2, '0')}</td>
-                  <td>{el.name}</td>
-                  <td className="np-cov-eltable__type">
-                    <span className="np-cov-eltable__type-code">{el.type}</span>{' '}
-                    <span className="np-cov-eltable__type-label">{TYPE_LABEL[el.type]}</span>
-                  </td>
-                  <td className="np-cov-eltable__len">
-                    {el.minLength === el.maxLength
-                      ? el.minLength
-                      : `${el.minLength}–${el.maxLength}`}
-                  </td>
-                  <td>
-                    {el.required ? (
-                      <span className="np-cov-pill np-cov-pill--full">Yes</span>
-                    ) : (
-                      <span className="np-cov-pill np-cov-pill--stub">No</span>
-                    )}
-                  </td>
-                  <td className="np-cov-eltable__codes">
-                    {el.codes ? (
-                      <details>
-                        <summary>{Object.keys(el.codes).length} code{Object.keys(el.codes).length === 1 ? '' : 's'}</summary>
-                        <ul className="np-cov-eltable__codelist">
-                          {Object.entries(el.codes).map(([k, v]) => (
-                            <li key={k}>
-                              <span className="np-cov-eltable__code-key">{k}</span> {v}
-                            </li>
-                          ))}
-                        </ul>
-                      </details>
-                    ) : (
-                      '—'
-                    )}
-                  </td>
-                </tr>
+                <Fragment key={i}>
+                  <tr>
+                    <td className="np-cov-eltable__pos">{(i + 1).toString().padStart(2, '0')}</td>
+                    <td>
+                      {el.name}
+                      {el.versions && el.versions.length > 0 && (
+                        <span className="np-cov-eltable__verbadge" title="Version-specific element">
+                          {el.versions.join(' · ')} only
+                        </span>
+                      )}
+                    </td>
+                    <td className="np-cov-eltable__type">
+                      <span className="np-cov-eltable__type-code">{el.type}</span>{' '}
+                      <span className="np-cov-eltable__type-label">{TYPE_LABEL[el.type]}</span>
+                    </td>
+                    <td className="np-cov-eltable__len">
+                      {el.minLength === el.maxLength
+                        ? el.minLength
+                        : `${el.minLength}–${el.maxLength}`}
+                    </td>
+                    <td>
+                      {el.required ? (
+                        <span className="np-cov-pill np-cov-pill--full">Yes</span>
+                      ) : (
+                        <span className="np-cov-pill np-cov-pill--stub">No</span>
+                      )}
+                    </td>
+                    <td className="np-cov-eltable__codes">
+                      {el.codes ? (
+                        <details>
+                          <summary>{Object.keys(el.codes).length} code{Object.keys(el.codes).length === 1 ? '' : 's'}</summary>
+                          <ul className="np-cov-eltable__codelist">
+                            {Object.entries(el.codes).map(([k, v]) => (
+                              <li key={k}>
+                                <span className="np-cov-eltable__code-key">{k}</span> {v}
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                  </tr>
+                  {el.versionNotes && (
+                    <tr className="np-cov-eltable__noterow">
+                      <td colSpan={6} className="np-cov-eltable__note">
+                        <span className="np-cov-eltable__note-label">Version note</span>
+                        {el.versionNotes}
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </tbody>
           </table>

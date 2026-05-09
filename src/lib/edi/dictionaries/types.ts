@@ -29,6 +29,19 @@ export interface ElementDef {
   maxLength: number;
   /** Optional code → description map for ID-type elements. */
   codes?: Record<string, string>;
+  /**
+   * Versions where this element exists. When omitted, the element applies to
+   * every version in the parent transaction's supportedVersions list. Use this
+   * for elements that were added in a later version (e.g., NAD3228 added in
+   * EDIFACT D04A) or removed/deprecated in a later version.
+   */
+  versions?: string[];
+  /**
+   * Free-text note about how this element changed between versions. Surfaced
+   * on the detail page so users know the dictionary's primary version doesn't
+   * cover every release.
+   */
+  versionNotes?: string;
 }
 
 export interface SegmentDef {

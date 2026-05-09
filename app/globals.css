@@ -3991,3 +3991,48 @@ body {
 .ds-elemedit__btn--primary:hover {
   background: #4f52d8;
 }
+
+/* ─── Version note rows on element table ────────────────────────────────── */
+
+.np-cov-eltable__verbadge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(245, 166, 35, 0.12);
+  color: #f5a623;
+  border: 1px solid rgba(245, 166, 35, 0.4);
+  font-family: var(--wb-font-mono, monospace);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.np-cov-eltable__noterow td {
+  padding: 0 !important;
+  border-bottom: none !important;
+}
+
+.np-cov-eltable__note {
+  padding: 6px 12px 10px 30px !important;
+  background: var(--wb-bg-elevated);
+  font-size: 11.5px;
+  color: var(--wb-text-secondary);
+  font-style: italic;
+  border-bottom: 1px solid var(--wb-border-sub) !important;
+  line-height: 1.5;
+}
+
+.np-cov-eltable__note-label {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 1px 6px;
+  background: var(--wb-bg-surface);
+  border: 1px solid var(--wb-border);
+  border-radius: 3px;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--wb-text-muted);
+}

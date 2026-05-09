@@ -71,7 +71,10 @@ export const EDIFACT_SEGMENTS: Record<string, SegmentDef> = {
     { name: 'Date/Time/Period', required: true, type: 'AN', minLength: 1, maxLength: 35 },
   ]},
   RFF: { id: 'RFF', name: 'Reference', elements: [
-    { name: 'Reference', required: true, type: 'AN', minLength: 1, maxLength: 35 },
+    {
+      name: 'Reference', required: true, type: 'AN', minLength: 1, maxLength: 70,
+      versionNotes: 'C506.1154 max length was an..35 in D96A; expanded to an..70 by D04A (UN/CEFACT).',
+    },
   ]},
   NAD: { id: 'NAD', name: 'Name and Address', elements: [
     { name: 'Party Function Code',    required: true,  type: 'ID', minLength: 1, maxLength: 3 },
@@ -80,8 +83,14 @@ export const EDIFACT_SEGMENTS: Record<string, SegmentDef> = {
     { name: 'Party Name',             required: false, type: 'AN', minLength: 1, maxLength: 35 },
     { name: 'Street',                 required: false, type: 'AN', minLength: 1, maxLength: 35 },
     { name: 'City',                   required: false, type: 'AN', minLength: 1, maxLength: 35 },
-    { name: 'Country Subdivision',    required: false, type: 'AN', minLength: 1, maxLength: 9 },
-    { name: 'Postal Code',            required: false, type: 'AN', minLength: 1, maxLength: 17 },
+    {
+      name: 'Country Subdivision',    required: false, type: 'AN', minLength: 1, maxLength: 70,
+      versionNotes: 'C819 free-text "Country sub-entity name" element 3228 (an..70) added in D04A. D96A used coded sub-entity (an..9) only (UN/CEFACT).',
+    },
+    {
+      name: 'Postal Code',            required: false, type: 'AN', minLength: 1, maxLength: 17,
+      versionNotes: 'Element 3251 expanded an..9 → an..17 by D04A (UN/CEFACT).',
+    },
     { name: 'Country',                required: false, type: 'ID', minLength: 1, maxLength: 3 },
   ]},
   CTA: { id: 'CTA', name: 'Contact Information', elements: [
@@ -105,14 +114,20 @@ export const EDIFACT_SEGMENTS: Record<string, SegmentDef> = {
     { name: 'Item Description',        required: false, type: 'AN', minLength: 1, maxLength: 35 },
   ]},
   QTY: { id: 'QTY', name: 'Quantity', elements: [
-    { name: 'Quantity Details', required: true, type: 'AN', minLength: 1, maxLength: 35 },
+    {
+      name: 'Quantity Details', required: true, type: 'AN', minLength: 1, maxLength: 35,
+      versionNotes: 'C186.6060 was n..15 in D96A; expanded to an..35 by D04A. C186.6411 unit code expanded an..3 → an..8 (UN/CEFACT).',
+    },
   ]},
   PRI: { id: 'PRI', name: 'Price Details', elements: [
     { name: 'Price Information', required: false, type: 'AN', minLength: 1, maxLength: 35 },
     { name: 'Sub-line Price Type', required: false, type: 'ID', minLength: 1, maxLength: 3 },
   ]},
   MOA: { id: 'MOA', name: 'Monetary Amount', elements: [
-    { name: 'Monetary Amount', required: true, type: 'AN', minLength: 1, maxLength: 35 },
+    {
+      name: 'Monetary Amount', required: true, type: 'AN', minLength: 1, maxLength: 35,
+      versionNotes: 'C516.5004 was n..18 in D96A; expanded to an..35 by D04A (UN/CEFACT).',
+    },
   ]},
   TAX: { id: 'TAX', name: 'Duty/Tax/Fee Details', elements: [
     { name: 'Duty Tax Fee Function', required: false, type: 'ID', minLength: 1, maxLength: 3 },
