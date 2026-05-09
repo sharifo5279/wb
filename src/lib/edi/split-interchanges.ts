@@ -26,7 +26,69 @@ export function splitInterchanges(raw: string): SplitInterchange[] {
     const segTerm = trimmed.startsWith('UNA') ? trimmed[8] : "'";
     return splitEdifact(raw, elemSep, segTerm);
   }
+  if (trimmed.startsWith('STX')) {
+    return splitTradacoms(raw);
+  }
   return [];
+}
+
+/**
+ * TRADACOMS interchanges are STX..END. The whole document is typically a
+ * single interchange, but multiple STX..END pairs concatenated are
+ * occasionally seen.
+ */
+function splitTradacoms(raw: string): SplitInterchange[] {
+  const segTerm = "'";
+  const elemSep = '+';
+  const out: SplitInterchange[] = [];
+
+  const parts = raw.split(segTerm).map((p) => p.trim()).filter(Boolean);
+  let current: string[] | null = null;
+  let stxFields: string[] | null = null;
+
+  for (const p of parts) {
+    const eq = p.indexOf('=');
+    const id = eq >= 0 ? p.slice(0, eq) : p;
+    const data = eq >= 0 ? p.slice(eq + 1) : '';
+
+    if (id === 'STX') {
+      if (current) flushTradacoms(out, current, stxFields, segTerm);
+      current = [p];
+      stxFields = data.split(elemSep);
+    } else if (id === 'END' && current) {
+      current.push(p);
+      flushTradacoms(out, current, stxFields, segTerm);
+      current = null;
+      stxFields = null;
+    } else if (current) {
+      current.push(p);
+    }
+  }
+  if (current) flushTradacoms(out, current, stxFields, segTerm);
+  return out;
+}
+
+function flushTradacoms(
+  out: SplitInterchange[],
+  segments: string[],
+  stxFields: string[] | null,
+  segTerm: string,
+): void {
+  const text = segments.map((s) => s + segTerm).join('\n');
+  const idx = out.length + 1;
+  // STX[1]=From, STX[2]=To, STX[4]=Sender Reference. Each is a composite
+  // separated by `:` — show only the identity portion.
+  const sender = (stxFields?.[1] ?? '').split(':')[0]?.trim();
+  const receiver = (stxFields?.[2] ?? '').split(':')[0]?.trim();
+  const ctrl = (stxFields?.[4] ?? '').trim();
+  out.push({
+    index: idx,
+    filename: `interchange_${ctrl || idx}.edi`,
+    text,
+    sender,
+    receiver,
+    controlNumber: ctrl,
+  });
 }
 
 function splitX12(raw: string, elemSep: string, segTerm: string): SplitInterchange[] {

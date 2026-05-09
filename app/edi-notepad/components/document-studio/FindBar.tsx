@@ -14,6 +14,7 @@ interface FindBarProps {
   currentMatch: number;
   showReplace: boolean;
   caseSensitive: boolean;
+  regex: boolean;
   onQueryChange: (q: string) => void;
   onReplaceQueryChange: (q: string) => void;
   onPrev: () => void;
@@ -22,6 +23,7 @@ interface FindBarProps {
   onReplaceAll: () => void;
   onToggleReplace: () => void;
   onToggleCase: () => void;
+  onToggleRegex: () => void;
   onClose: () => void;
 }
 
@@ -44,6 +46,7 @@ export function FindBar({
   currentMatch,
   showReplace,
   caseSensitive,
+  regex,
   onQueryChange,
   onReplaceQueryChange,
   onPrev,
@@ -52,6 +55,7 @@ export function FindBar({
   onReplaceAll,
   onToggleReplace,
   onToggleCase,
+  onToggleRegex,
   onClose,
 }: FindBarProps) {
   const queryRef = useRef<HTMLInputElement>(null);
@@ -115,6 +119,16 @@ export function FindBar({
           title="Match case"
         >
           Aa
+        </button>
+
+        <button
+          type="button"
+          className={`ds-findbar__case${regex ? ' ds-findbar__case--active' : ''}`}
+          onClick={onToggleRegex}
+          aria-pressed={regex}
+          title="Use regular expression"
+        >
+          .*
         </button>
 
         <span className="ds-findbar__count" aria-live="polite">

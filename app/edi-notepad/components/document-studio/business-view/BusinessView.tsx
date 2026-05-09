@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { ParseError, ParseResult, Segment } from '@/src/lib/edi/types';
 import { renderX12_850 } from './X12_850';
+import { renderX12_855 } from './X12_855';
 import { renderX12_856 } from './X12_856';
 import { renderX12_810 } from './X12_810';
 import { renderX12_997 } from './X12_997';
@@ -130,9 +131,12 @@ function renderBlock(block: TxnBlock) {
   if (block.standard === 'X12') {
     switch (block.code) {
       case '850': return renderX12_850(block);
+      case '855': return renderX12_855(block);
       case '856': return renderX12_856(block);
       case '810': return renderX12_810(block);
-      case '997': return renderX12_997(block);
+      case '997':
+      case '999':
+        return renderX12_997(block);
     }
   }
   return renderGeneric(block);

@@ -158,3 +158,65 @@ describe('validateEdifact — trailer counts', () => {
     expect(err).toBeDefined();
   });
 });
+
+// ─── Element-level validation (PR #8) ────────────────────────────────────────
+
+describe('validateElements — type / length / code-list', () => {
+  it('does NOT flag ISA padded sender field at 15 chars', () => {
+    // Regression guard: ISA fields are fixed-width with trailing spaces;
+    // the length check must use raw value.length (= maxLength), not trim.
+    const doc = build([
+      'ST*850*0001~',
+      'BEG*00*NE*PO1**20210101~',
+      'CTT*1~',
+      'SE*4*0001~',
+    ]);
+    const result = parseEDI(doc);
+    const elementErrs = result.errors.filter(
+      (e) => e.segmentId === 'ISA' && /length/.test(e.message),
+    );
+    expect(elementErrs).toHaveLength(0);
+  });
+
+  it('flags an integer element that contains non-digits', () => {
+    // SE01 (segment count) is N0; "X" is not an integer.
+    const doc = build([
+      'ST*850*0001~',
+      'BEG*00*NE*PO1**20210101~',
+      'CTT*1~',
+      'SE*X*0001~',
+    ]);
+    const result = parseEDI(doc);
+    const err = result.errors.find(
+      (e) => e.severity === 'warning' && e.segmentId === 'SE' && /integer/.test(e.message),
+    );
+    expect(err).toBeDefined();
+  });
+
+  it('flags a date that is not YYMMDD/CCYYMMDD', () => {
+    // BEG05 is DT; "BADDATE" should warn.
+    const doc = build([
+      'ST*850*0001~',
+      'BEG*00*NE*PO1**BADDATE~',
+      'CTT*1~',
+      'SE*4*0001~',
+    ]);
+    const result = parseEDI(doc);
+    const err = result.errors.find(
+      (e) => e.severity === 'warning' && e.segmentId === 'BEG' && /date/.test(e.message),
+    );
+    expect(err).toBeDefined();
+  });
+
+  it('emits warnings (not errors) so ACK status is not poisoned', () => {
+    const doc = build([
+      'ST*850*0001~',
+      'BEG*00*NE*PO1**BADDATE~',
+      'CTT*1~',
+      'SE*4*0001~',
+    ]);
+    const result = parseEDI(doc);
+    const warnings = result.errors.filter((e) => e.severity === 'warning');
+    expect(warnings.length).toBeGreaterThan(0);
+  });
+});

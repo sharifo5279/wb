@@ -92,7 +92,12 @@ export function renderX12_856(block: TxnBlock) {
         <div>
           <div className="ds-bv-doc__titlerow">
             <h1 className="ds-bv-doc__title">Advance Ship Notice</h1>
-            {status && <span className={`ds-bv-status ds-bv-status--${status.tone}`}>{status.label}</span>}
+            {status && (
+              <span className={`ds-bv-status ds-bv-status--${status.tone}`}>
+                <span className="ds-bv-status__glyph" aria-hidden="true">{status.glyph}</span>
+                {status.label}
+              </span>
+            )}
           </div>
           <div className="ds-bv-doc__subtitle">
             X12 856 · {block.context.sender ?? '—'} → {block.context.receiver ?? '—'}

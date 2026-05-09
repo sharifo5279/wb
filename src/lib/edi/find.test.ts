@@ -11,20 +11,62 @@ describe('computeMatches', () => {
   });
 
   it('finds all non-overlapping matches', () => {
-    expect(computeMatches('ababab', 'ab', false)).toEqual([0, 2, 4]);
+    expect(computeMatches('ababab', 'ab', false)).toEqual([
+      { start: 0, length: 2 },
+      { start: 2, length: 2 },
+      { start: 4, length: 2 },
+    ]);
   });
 
   it('case-insensitive by default', () => {
-    expect(computeMatches('ISA*ISA', 'isa', false)).toEqual([0, 4]);
+    expect(computeMatches('ISA*ISA', 'isa', false)).toEqual([
+      { start: 0, length: 3 },
+      { start: 4, length: 3 },
+    ]);
   });
 
   it('case-sensitive when requested', () => {
-    expect(computeMatches('ISA*isa', 'ISA', true)).toEqual([0]);
+    expect(computeMatches('ISA*isa', 'ISA', true)).toEqual([
+      { start: 0, length: 3 },
+    ]);
   });
 
   it('handles overlapping queries by advancing past needle length', () => {
     // "aaaa" with query "aa" → matches at 0 and 2 (non-overlapping)
-    expect(computeMatches('aaaa', 'aa', false)).toEqual([0, 2]);
+    expect(computeMatches('aaaa', 'aa', false)).toEqual([
+      { start: 0, length: 2 },
+      { start: 2, length: 2 },
+    ]);
+  });
+
+  it('regex: matches a digit pattern', () => {
+    expect(computeMatches('abc123def456', '\\d+', false, true)).toEqual([
+      { start: 3, length: 3 },
+      { start: 9, length: 3 },
+    ]);
+  });
+
+  it('regex: variable-length matches', () => {
+    // greedy matches the whole word "foo" or "foobar"
+    expect(computeMatches('foo foobar foob', 'foo\\w*', false, true)).toEqual([
+      { start: 0, length: 3 },
+      { start: 4, length: 6 },
+      { start: 11, length: 4 },
+    ]);
+  });
+
+  it('regex: invalid pattern returns []', () => {
+    expect(computeMatches('abc', '[invalid', false, true)).toEqual([]);
+  });
+
+  it('regex: respects case flag', () => {
+    expect(computeMatches('ISA*isa', 'isa', true, true)).toEqual([
+      { start: 4, length: 3 },
+    ]);
+    expect(computeMatches('ISA*isa', 'isa', false, true)).toEqual([
+      { start: 0, length: 3 },
+      { start: 4, length: 3 },
+    ]);
   });
 });
 
@@ -52,6 +94,12 @@ describe('replaceAll', () => {
   it('handles different-length replacements', () => {
     const r = replaceAll('aaa', 'a', 'XX', false);
     expect(r.text).toBe('XXXXXX');
+    expect(r.count).toBe(3);
+  });
+
+  it('regex: replaces variable-length matches', () => {
+    const r = replaceAll('a1 b22 c333', '\\d+', 'N', false, true);
+    expect(r.text).toBe('aN bN cN');
     expect(r.count).toBe(3);
   });
 });

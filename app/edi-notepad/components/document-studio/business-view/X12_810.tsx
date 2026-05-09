@@ -2,6 +2,25 @@ import type { TxnBlock } from './BusinessView';
 import { formatDate, formatAmount, collectN1Loops, renderParty, statusPillFor } from './helpers';
 import { ErrorPanel } from './ErrorPanel';
 
+/** Parse a YYMMDD or CCYYMMDD into a Date, or null. */
+function parseEdiDate(raw: string | undefined): Date | null {
+  if (!raw) return null;
+  const s = raw.trim();
+  let yyyy: number, mm: number, dd: number;
+  if (s.length === 8) {
+    yyyy = parseInt(s.slice(0, 4), 10);
+    mm = parseInt(s.slice(4, 6), 10);
+    dd = parseInt(s.slice(6, 8), 10);
+  } else if (s.length === 6) {
+    const yy = parseInt(s.slice(0, 2), 10);
+    yyyy = yy >= 50 ? 1900 + yy : 2000 + yy;
+    mm = parseInt(s.slice(2, 4), 10);
+    dd = parseInt(s.slice(4, 6), 10);
+  } else return null;
+  const d = new Date(Date.UTC(yyyy, mm - 1, dd));
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 interface InvoiceLine {
   line: string;
   qty: string;
@@ -18,6 +37,10 @@ export function renderX12_810(block: TxnBlock) {
   const tds = segs.find((s) => s.id === 'TDS');
   const txi = segs.filter((s) => s.id === 'TXI');
   const cur = segs.find((s) => s.id === 'CUR');
+  const itd = segs.find((s) => s.id === 'ITD');
+  const sac = segs.filter((s) => s.id === 'SAC');
+  const refs = segs.filter((s) => s.id === 'REF');
+  const dtms = segs.filter((s) => s.id === 'DTM');
 
   const invoiceDate = big?.elements[0]?.trim() ?? '';
   const invoiceNumber = big?.elements[1]?.trim() ?? '';
@@ -54,7 +77,54 @@ export function renderX12_810(block: TxnBlock) {
     return formatAmount((n / 100).toString());
   }
 
-  const status = statusPillFor('810', segs);
+  // ITD: payment terms. ITD03 = discount %, ITD05 = days for discount,
+  // ITD07 = net days from invoice date, ITD13 = description.
+  const itdDiscountPct = itd?.elements[2]?.trim() ?? '';
+  const itdDiscountDays = itd?.elements[4]?.trim() ?? '';
+  const itdNetDays = itd?.elements[6]?.trim() ?? '';
+  const itdDesc = itd?.elements[12]?.trim() ?? '';
+
+  // Find a DTM with qualifier 091 (Report Period End) or 003 (Invoice Due) for due date.
+  const dueDtm = dtms.find((d) => ['091', '003', '009'].includes(d.elements[0]?.trim() ?? ''));
+  const dueDate = dueDtm?.elements[1]?.trim();
+  let pastDue = false;
+  let daysToDue: number | null = null;
+  const dueParsed = parseEdiDate(dueDate);
+  if (dueParsed) {
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    daysToDue = Math.round((dueParsed.getTime() - today.getTime()) / 86_400_000);
+    pastDue = daysToDue < 0;
+  }
+
+  // Compute early-pay amount if discount info + invoice total present.
+  let earlyPayAmount: string | null = null;
+  let earlyPayBy: string | null = null;
+  if (itdDiscountPct && tds?.elements[0] && itdDiscountDays) {
+    const total = parseFloat(tds.elements[0]);
+    const pct = parseFloat(itdDiscountPct);
+    const invDate = parseEdiDate(invoiceDate);
+    if (!Number.isNaN(total) && !Number.isNaN(pct) && invDate) {
+      const discounted = (total / 100) * (1 - pct / 100);
+      earlyPayAmount = formatAmount(discounted.toString());
+      const cutoff = new Date(invDate.getTime() + parseInt(itdDiscountDays, 10) * 86_400_000);
+      earlyPayBy = `${cutoff.getUTCFullYear()}-${String(cutoff.getUTCMonth() + 1).padStart(2, '0')}-${String(cutoff.getUTCDate()).padStart(2, '0')}`;
+    }
+  }
+
+  // Compute total allowance/charge from SAC segments.
+  // SAC02 indicator code: A=Allowance, C=Charge. SAC05 = amount (cents implied).
+  const sacRows = sac.map((s) => ({
+    indicator: s.elements[0]?.trim() ?? '',
+    code: s.elements[1]?.trim() ?? '',
+    amountRaw: s.elements[4]?.trim() ?? '',
+    description: s.elements[14]?.trim() ?? '',
+  })).filter((r) => r.indicator || r.amountRaw);
+
+  const baseStatus = statusPillFor('810', segs);
+  const status = pastDue
+    ? { label: 'Past Due', tone: 'error' as const, glyph: '✕' as const }
+    : baseStatus;
 
   return (
     <>
@@ -62,7 +132,12 @@ export function renderX12_810(block: TxnBlock) {
         <div>
           <div className="ds-bv-doc__titlerow">
             <h1 className="ds-bv-doc__title">Invoice</h1>
-            {status && <span className={`ds-bv-status ds-bv-status--${status.tone}`}>{status.label}</span>}
+            {status && (
+              <span className={`ds-bv-status ds-bv-status--${status.tone}`}>
+                <span className="ds-bv-status__glyph" aria-hidden="true">{status.glyph}</span>
+                {status.label}
+              </span>
+            )}
           </div>
           <div className="ds-bv-doc__subtitle">
             X12 810 · {block.context.sender ?? '—'} → {block.context.receiver ?? '—'}
@@ -80,6 +155,47 @@ export function renderX12_810(block: TxnBlock) {
 
       {block.errors.length > 0 && (
         <ErrorPanel errors={block.errors} onSelect={block.onErrorClick} />
+      )}
+
+      {(itd || dueDate) && (
+        <section className="ds-bv-band ds-bv-band--terms" aria-label="Payment terms">
+          <div className="ds-bv-band__row">
+            <div className="ds-bv-band__label">Payment Terms</div>
+            <div className="ds-bv-band__value">
+              {itdDesc || (itdNetDays ? `Net ${itdNetDays}` : '—')}
+              {itdDiscountPct && itdDiscountDays && (
+                <span className="ds-bv-band__chip">{itdDiscountPct}% / {itdDiscountDays} days</span>
+              )}
+            </div>
+            {dueDate && (
+              <div className={`ds-bv-band__due${pastDue ? ' ds-bv-band__due--late' : ''}`}>
+                Due {formatDate(dueDate)}
+                {daysToDue !== null && (
+                  <span className="ds-bv-band__days">{pastDue ? `${-daysToDue} days late` : `${daysToDue} days`}</span>
+                )}
+              </div>
+            )}
+          </div>
+          {earlyPayAmount && earlyPayBy && (
+            <div className="ds-bv-band__sub">
+              If paid by <strong>{earlyPayBy}</strong>: {earlyPayAmount}
+            </div>
+          )}
+        </section>
+      )}
+
+      {refs.length > 0 && (
+        <section className="ds-bv-section">
+          <h2 className="ds-bv-section__title">References</h2>
+          <div className="ds-bv-chiprow">
+            {refs.map((r, i) => (
+              <span key={i} className="ds-bv-chip">
+                <span className="ds-bv-chip__key">{r.elements[0]?.trim()}</span>
+                <span className="ds-bv-chip__val">{r.elements[1]?.trim()}</span>
+              </span>
+            ))}
+          </div>
+        </section>
       )}
 
       {parties.length > 0 && (
@@ -121,22 +237,37 @@ export function renderX12_810(block: TxnBlock) {
         </section>
       )}
 
-      {(tds || txi.length > 0) && (
+      {(tds || txi.length > 0 || sacRows.length > 0) && (
         <section className="ds-bv-section">
           <h2 className="ds-bv-section__title">Totals</h2>
           <div className="ds-bv-kv-grid">
-            {tds && (
-              <div className="ds-bv-kv ds-bv-kv--total">
-                <span className="ds-bv-kv__key">Invoice Total</span>
-                <span className="ds-bv-kv__value">{tdsAmount()}</span>
+            {sacRows.map((r, i) => (
+              <div key={`sac-${i}`} className="ds-bv-kv">
+                <span className="ds-bv-kv__key">
+                  {r.indicator === 'A' ? 'Allowance' : r.indicator === 'C' ? 'Charge' : 'Adjustment'}
+                  {r.code ? ` · ${r.code}` : ''}
+                  {r.description ? ` · ${r.description}` : ''}
+                </span>
+                <span className="ds-bv-kv__value">
+                  {r.amountRaw ? (() => {
+                    const n = parseFloat(r.amountRaw);
+                    return Number.isNaN(n) ? r.amountRaw : formatAmount((n / 100).toString());
+                  })() : '—'}
+                </span>
               </div>
-            )}
+            ))}
             {txi.map((t, i) => (
-              <div key={i} className="ds-bv-kv">
+              <div key={`txi-${i}`} className="ds-bv-kv">
                 <span className="ds-bv-kv__key">Tax {t.elements[0]?.trim()}</span>
                 <span className="ds-bv-kv__value">{formatAmount(t.elements[1]?.trim())}</span>
               </div>
             ))}
+            {tds && (
+              <div className="ds-bv-kv ds-bv-kv--total">
+                <span className="ds-bv-kv__key">Invoice Total{cur ? ` (${cur.elements[1]?.trim()})` : ''}</span>
+                <span className="ds-bv-kv__value">{tdsAmount()}</span>
+              </div>
+            )}
           </div>
         </section>
       )}
