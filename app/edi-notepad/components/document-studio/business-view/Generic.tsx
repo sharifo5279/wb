@@ -40,9 +40,10 @@ export function renderGeneric(block: TxnBlock) {
           Segments <span className="ds-bv-section__count">({block.segments.length})</span>
         </h2>
         <p className="ds-bv-fallback-hint">
-          A dedicated business view for {block.code} hasn&apos;t been built yet — showing the
-          raw segment list. Switch to the Raw view to edit, or to the Hex view to inspect
-          bytes.
+          A dedicated business view for {block.code} is on the roadmap. Until then we
+          render every segment with its dictionary-resolved descriptor below — accurate,
+          just less polished than a transaction-specific layout. Switch to the Raw view
+          to edit or Hex view to inspect bytes.
         </p>
         <table className="ds-bv-lineitems ds-bv-lineitems--dense">
           <thead>

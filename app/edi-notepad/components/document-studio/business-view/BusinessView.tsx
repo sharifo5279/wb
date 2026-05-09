@@ -6,7 +6,18 @@ import { renderX12_850 } from './X12_850';
 import { renderX12_855 } from './X12_855';
 import { renderX12_856 } from './X12_856';
 import { renderX12_810 } from './X12_810';
+import { renderX12_820 } from './X12_820';
+import { renderX12_860 } from './X12_860';
+import { renderX12_940 } from './X12_940';
+import { renderX12_945 } from './X12_945';
+import { renderX12_214 } from './X12_214';
+import { renderX12_846 } from './X12_846';
+import { renderX12_832 } from './X12_832';
 import { renderX12_997 } from './X12_997';
+import { renderEdifact_ORDERS } from './Edifact_ORDERS';
+import { renderEdifact_INVOIC } from './Edifact_INVOIC';
+import { renderEdifact_DESADV } from './Edifact_DESADV';
+import { renderEdifact_CONTRL } from './Edifact_CONTRL';
 import { renderGeneric } from './Generic';
 import { ErrorDrawer } from './ErrorDrawer';
 
@@ -140,9 +151,24 @@ function renderBlock(block: TxnBlock) {
       case '855': return renderX12_855(block);
       case '856': return renderX12_856(block);
       case '810': return renderX12_810(block);
+      case '820': return renderX12_820(block);
+      case '860': return renderX12_860(block);
+      case '940': return renderX12_940(block);
+      case '945': return renderX12_945(block);
+      case '214': return renderX12_214(block);
+      case '846': return renderX12_846(block);
+      case '832': return renderX12_832(block);
       case '997':
       case '999':
         return renderX12_997(block);
+    }
+  }
+  if (block.standard === 'EDIFACT') {
+    switch (block.code) {
+      case 'ORDERS': return renderEdifact_ORDERS(block);
+      case 'INVOIC': return renderEdifact_INVOIC(block);
+      case 'DESADV': return renderEdifact_DESADV(block);
+      case 'CONTRL': return renderEdifact_CONTRL(block);
     }
   }
   return renderGeneric(block);
