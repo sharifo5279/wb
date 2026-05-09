@@ -3,13 +3,18 @@ import type { TransactionDef } from './types';
 const STD = 'EDIFACT' as const;
 const VER = 'D01B';
 
+/** UN/EDIFACT directories where the message structure is broadly stable.
+ *  The dictionary itself is curated against D01B; element-level qualifiers
+ *  may evolve between directories. */
+const ALL_VERSIONS = ['D96A', 'D01B', 'D04A'];
+
 function sr(id: string, required: boolean, maxUse: number = 1) {
   return { id, required, maxUse };
 }
 
 export const EDIFACT_MESSAGES: Record<string, TransactionDef> = {
   ORDERS: {
-    code: 'ORDERS', standard: STD, version: VER, full: true,
+    code: 'ORDERS', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Purchase Order', industry: 'Supply Chain / Retail / CPG',
     segments: [
       sr('UNH', true), sr('BGM', true), sr('DTM', false, -1), sr('RFF', false, -1),
@@ -21,7 +26,7 @@ export const EDIFACT_MESSAGES: Record<string, TransactionDef> = {
     ],
   },
   ORDRSP: {
-    code: 'ORDRSP', standard: STD, version: VER, full: true,
+    code: 'ORDRSP', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Purchase Order Response', industry: 'Supply Chain / Retail',
     segments: [
       sr('UNH', true), sr('BGM', true), sr('DTM', false, -1), sr('FTX', false, -1),
@@ -32,7 +37,7 @@ export const EDIFACT_MESSAGES: Record<string, TransactionDef> = {
     ],
   },
   ORDCHG: {
-    code: 'ORDCHG', standard: STD, version: VER, full: true,
+    code: 'ORDCHG', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Purchase Order Change Request', industry: 'Supply Chain',
     segments: [
       sr('UNH', true), sr('BGM', true), sr('DTM', false, -1), sr('FTX', false, -1),
@@ -42,7 +47,7 @@ export const EDIFACT_MESSAGES: Record<string, TransactionDef> = {
     ],
   },
   DESADV: {
-    code: 'DESADV', standard: STD, version: VER, full: true,
+    code: 'DESADV', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Despatch Advice (ASN)', industry: 'Supply Chain / Logistics',
     segments: [
       sr('UNH', true), sr('BGM', true), sr('DTM', false, -1), sr('RFF', false, -1),
@@ -53,7 +58,7 @@ export const EDIFACT_MESSAGES: Record<string, TransactionDef> = {
     ],
   },
   RECADV: {
-    code: 'RECADV', standard: STD, version: VER, full: true,
+    code: 'RECADV', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Receiving Advice', industry: 'Supply Chain / Logistics',
     segments: [
       sr('UNH', true), sr('BGM', true), sr('DTM', false, -1), sr('RFF', false, -1),
@@ -63,7 +68,7 @@ export const EDIFACT_MESSAGES: Record<string, TransactionDef> = {
     ],
   },
   INVOIC: {
-    code: 'INVOIC', standard: STD, version: VER, full: true,
+    code: 'INVOIC', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Invoice', industry: 'Supply Chain / Retail / CPG / Financial Services',
     segments: [
       sr('UNH', true), sr('BGM', true), sr('DTM', false, -1), sr('RFF', false, -1),
@@ -75,7 +80,7 @@ export const EDIFACT_MESSAGES: Record<string, TransactionDef> = {
     ],
   },
   PAYMUL: {
-    code: 'PAYMUL', standard: STD, version: VER, full: true,
+    code: 'PAYMUL', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Multiple Payment Order', industry: 'Financial Services',
     segments: [
       sr('UNH', true), sr('BGM', true), sr('DTM', false, -1), sr('RFF', false, -1),
@@ -85,7 +90,7 @@ export const EDIFACT_MESSAGES: Record<string, TransactionDef> = {
     ],
   },
   REMADV: {
-    code: 'REMADV', standard: STD, version: VER, full: true,
+    code: 'REMADV', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Remittance Advice', industry: 'Financial Services',
     segments: [
       sr('UNH', true), sr('BGM', true), sr('DTM', false, -1), sr('RFF', false, -1),
@@ -94,7 +99,7 @@ export const EDIFACT_MESSAGES: Record<string, TransactionDef> = {
     ],
   },
   PRICAT: {
-    code: 'PRICAT', standard: STD, version: VER, full: true,
+    code: 'PRICAT', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Price/Sales Catalogue', industry: 'Retail / CPG',
     segments: [
       sr('UNH', true), sr('BGM', true), sr('DTM', false, -1), sr('RFF', false, -1),
@@ -105,7 +110,7 @@ export const EDIFACT_MESSAGES: Record<string, TransactionDef> = {
     ],
   },
   INVRPT: {
-    code: 'INVRPT', standard: STD, version: VER, full: true,
+    code: 'INVRPT', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Inventory Report', industry: 'Retail / CPG / Manufacturing',
     segments: [
       sr('UNH', true), sr('BGM', true), sr('DTM', false, -1), sr('RFF', false, -1),
@@ -115,7 +120,7 @@ export const EDIFACT_MESSAGES: Record<string, TransactionDef> = {
     ],
   },
   IFTMIN: {
-    code: 'IFTMIN', standard: STD, version: VER, full: true,
+    code: 'IFTMIN', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Instruction Message (Transport)', industry: 'Logistics / Transportation',
     segments: [
       sr('UNH', true), sr('BGM', true), sr('DTM', false, -1), sr('RFF', false, -1),
@@ -127,7 +132,7 @@ export const EDIFACT_MESSAGES: Record<string, TransactionDef> = {
     ],
   },
   IFTSTA: {
-    code: 'IFTSTA', standard: STD, version: VER, full: true,
+    code: 'IFTSTA', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Transport Status Message', industry: 'Logistics / Transportation',
     segments: [
       sr('UNH', true), sr('BGM', true), sr('DTM', false, -1), sr('RFF', false, -1),
@@ -136,7 +141,7 @@ export const EDIFACT_MESSAGES: Record<string, TransactionDef> = {
     ],
   },
   CONTRL: {
-    code: 'CONTRL', standard: STD, version: VER, full: true,
+    code: 'CONTRL', standard: STD, version: VER, supportedVersions: ALL_VERSIONS, full: true,
     name: 'Syntax and Service Report (ACK)', industry: 'All',
     segments: [
       sr('UNH', true), sr('UCI', true), sr('UCM', false, -1), sr('UNT', true),
