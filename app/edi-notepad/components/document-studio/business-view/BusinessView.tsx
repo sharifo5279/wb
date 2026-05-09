@@ -1,11 +1,13 @@
 'use client';
 
-import type { ParseResult, Segment } from '@/src/lib/edi/types';
+import { useState } from 'react';
+import type { ParseError, ParseResult, Segment } from '@/src/lib/edi/types';
 import { renderX12_850 } from './X12_850';
 import { renderX12_856 } from './X12_856';
 import { renderX12_810 } from './X12_810';
 import { renderX12_997 } from './X12_997';
 import { renderGeneric } from './Generic';
+import { ErrorDrawer } from './ErrorDrawer';
 
 interface BusinessViewProps {
   parseResult: ParseResult | null;
@@ -19,6 +21,8 @@ export interface TxnBlock {
   standard: 'X12' | 'EDIFACT' | 'TRADACOMS';
   /** All segments inside the ST..SE (or UNH..UNT) inclusive. */
   segments: Segment[];
+  /** Validation errors that fall inside this block (flattened from segments). */
+  errors: ParseError[];
   /** Envelope context — sender, receiver, date from ISA/GS or UNB. */
   context: {
     sender?: string;
@@ -28,6 +32,8 @@ export interface TxnBlock {
     groupControl?: string;
     transactionControl?: string;
   };
+  /** Callback installed by BusinessView so renderers can open the drawer. */
+  onErrorClick?: (errorIdx: number) => void;
 }
 
 /** Walk the parse result and extract one TxnBlock per ST..SE / UNH..UNT pair. */
@@ -56,6 +62,7 @@ function extractTransactions(result: ParseResult): TxnBlock[] {
           code,
           standard: 'X12',
           segments: block,
+          errors: block.flatMap((s) => s.errors),
           context: { ...ctx, transactionControl: segs[stStart].elements[1]?.trim() },
         });
         stStart = -1;
@@ -81,6 +88,7 @@ function extractTransactions(result: ParseResult): TxnBlock[] {
           code,
           standard: 'EDIFACT',
           segments: segs.slice(unhStart, i + 1),
+          errors: segs.slice(unhStart, i + 1).flatMap((s) => s.errors),
           context: { ...ctx, transactionControl: segs[unhStart].elements[0]?.trim() },
         });
         unhStart = -1;
@@ -106,6 +114,7 @@ function extractTransactions(result: ParseResult): TxnBlock[] {
           code,
           standard: 'TRADACOMS',
           segments: segs.slice(mhdStart, i + 1),
+          errors: segs.slice(mhdStart, i + 1).flatMap((s) => s.errors),
           context: { ...ctx, transactionControl: segs[mhdStart].elements[0]?.trim() },
         });
         mhdStart = -1;
@@ -137,6 +146,9 @@ function renderBlock(block: TxnBlock) {
  * transaction-specific renderer (or a generic fallback).
  */
 export function BusinessView({ parseResult }: BusinessViewProps) {
+  // Drawer state — { blockIdx, errorIdx } or null when closed.
+  const [drawer, setDrawer] = useState<{ blockIdx: number; errorIdx: number } | null>(null);
+
   if (!parseResult || parseResult.segments.length === 0) {
     return (
       <div className="ds-bv-empty" role="status" aria-live="polite">
@@ -154,13 +166,31 @@ export function BusinessView({ parseResult }: BusinessViewProps) {
     );
   }
 
+  // Wire onErrorClick for each block so renderers' inline ErrorPanel can open the drawer.
+  const annotated = blocks.map((b, idx) => ({
+    ...b,
+    onErrorClick: (errorIdx: number) => setDrawer({ blockIdx: idx, errorIdx }),
+  }));
+
+  const drawerBlock = drawer ? annotated[drawer.blockIdx] : null;
+
   return (
     <div className="ds-bv-scroll">
-      {blocks.map((block, idx) => (
+      {annotated.map((block, idx) => (
         <div key={idx} className="ds-bv-doc">
           {renderBlock(block)}
         </div>
       ))}
+
+      {drawer && drawerBlock && (
+        <ErrorDrawer
+          block={drawerBlock}
+          errorIdx={drawer.errorIdx}
+          onPrev={() => setDrawer((d) => d ? { ...d, errorIdx: Math.max(0, d.errorIdx - 1) } : d)}
+          onNext={() => setDrawer((d) => d && drawerBlock ? { ...d, errorIdx: Math.min(drawerBlock.errors.length - 1, d.errorIdx + 1) } : d)}
+          onClose={() => setDrawer(null)}
+        />
+      )}
     </div>
   );
 }

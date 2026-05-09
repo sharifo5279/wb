@@ -117,3 +117,71 @@ export function purposeLabel(code: string): string {
   };
   return labels[code] ?? code;
 }
+
+/** Friendly label for BAK02 acknowledgment type codes. */
+export function bakAckLabel(code: string): string {
+  const labels: Record<string, string> = {
+    AC: 'With Detail and Change', AD: 'With Detail, No Change',
+    AE: 'Acknowledge — Exceptions', AH: 'Acknowledge — Hold',
+    AK: 'Acknowledged', AP: 'Accepted', NA: 'No Acknowledgment Needed',
+    RD: 'Reject with Detail', RF: 'Reject',
+  };
+  return labels[code] ?? code;
+}
+
+export interface StatusPill {
+  label: string;
+  tone: 'ok' | 'warn' | 'error' | 'neutral';
+}
+
+/**
+ * Derive a status pill for the transaction header. Returns null when no
+ * deterministic status is available (we don't fabricate "Original" for
+ * transactions that don't carry a purpose / ack / status code).
+ */
+export function statusPillFor(setCode: string, segments: Array<{ id: string; elements: string[] }>): StatusPill | null {
+  if (setCode === '850' || setCode === '860' || setCode === '875') {
+    const beg = segments.find((s) => s.id === 'BEG' || s.id === 'BCH' || s.id === 'BIG');
+    const purpose = beg?.elements[0]?.trim();
+    if (!purpose) return null;
+    return { label: purposeLabel(purpose), tone: purpose === '00' ? 'ok' : 'neutral' };
+  }
+  if (setCode === '855' || setCode === '865') {
+    const bak = segments.find((s) => s.id === 'BAK' || s.id === 'BCA');
+    const type = bak?.elements[1]?.trim();
+    if (!type) return null;
+    const tone: StatusPill['tone'] = type === 'AC' || type === 'AD' || type === 'AK' || type === 'AP' ? 'ok' : (type === 'RD' || type === 'RF' ? 'error' : 'neutral');
+    return { label: bakAckLabel(type), tone };
+  }
+  if (setCode === '810' || setCode === '880') {
+    return { label: 'Open', tone: 'warn' };
+  }
+  if (setCode === '856') {
+    const bsn = segments.find((s) => s.id === 'BSN');
+    const purpose = bsn?.elements[0]?.trim();
+    if (!purpose) return null;
+    return { label: purposeLabel(purpose), tone: purpose === '00' ? 'ok' : 'neutral' };
+  }
+  if (setCode === '997' || setCode === '999') {
+    const ak9 = segments.find((s) => s.id === 'AK9');
+    const ack = ak9?.elements[0]?.trim();
+    if (!ack) return null;
+    const tone: StatusPill['tone'] = ack === 'A' ? 'ok' : ack === 'E' ? 'warn' : 'error';
+    const label = ack === 'A' ? 'Accepted' : ack === 'E' ? 'Accepted with Errors' : ack === 'P' ? 'Partial' : 'Rejected';
+    return { label, tone };
+  }
+  return null;
+}
+
+/**
+ * Reconstruct the raw segment string from a parsed Segment, joining the ID
+ * and elements with the active element separator. Useful for the Error
+ * Detail drawer's "Raw segment" display.
+ */
+export function reconstructSegment(
+  seg: { id: string; elements: string[] },
+  elemSep: string,
+  segTerm: string,
+): string {
+  return seg.id + (seg.elements.length ? elemSep + seg.elements.join(elemSep) : '') + segTerm;
+}

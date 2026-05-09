@@ -21,6 +21,7 @@ import { AckModal } from './AckModal';
 import { SplitModal } from './SplitModal';
 import { NewDocumentModal } from './NewDocumentModal';
 import { CommandPalette, type Command } from './CommandPalette';
+import { ShortcutsModal } from './ShortcutsModal';
 import { loadSession, saveSession } from './session';
 import { toggleTheme } from './theme';
 
@@ -131,6 +132,7 @@ export function DocumentStudio() {
   const [splitOpen,     setSplitOpen]     = useState(false);
   const [newDocOpen,    setNewDocOpen]    = useState(false);
   const [paletteOpen,   setPaletteOpen]   = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [treePanelCollapsed, setTreePanelCollapsed] = useState(false);
   const [dropping, setDropping] = useState(false);
   const sessionLoaded = useRef(false);
@@ -236,6 +238,31 @@ export function DocumentStudio() {
       case 'summary': setSummaryOpen(true); return;
       case 'ack': setAckOpen(true); return;
       case 'split': setSplitOpen(true); return;
+      case 'copy': {
+        if (!activeDoc.rawContent) return;
+        void navigator.clipboard.writeText(activeDoc.rawContent).catch(() => {
+          window.alert('Clipboard write was blocked by the browser.');
+        });
+        return;
+      }
+      case 'download': {
+        if (!activeDoc.rawContent) return;
+        const blob = new Blob([activeDoc.rawContent], { type: 'application/edi-x12' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const safeTitle = (activeDoc.title || 'document').replace(/[^A-Za-z0-9_.-]/g, '_');
+        a.href = url;
+        a.download = `${safeTitle}.edi`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return;
+      }
+      case 'back-to-editor': {
+        patchActiveDoc({ viewMode: 'raw' });
+        return;
+      }
       case 'print': {
         if (activeDoc.viewMode !== 'business') patchActiveDoc({ viewMode: 'business' });
         requestAnimationFrame(() => window.print());
@@ -290,23 +317,27 @@ export function DocumentStudio() {
     });
   }, [docs, activeDocId, treePanelCollapsed]);
 
-  // ── Command palette: Ctrl+Shift+P / ⌘K listener ───────────────────────────
+  // ── Command palette + Shortcuts modal global listener ─────────────────────
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const meta = e.ctrlKey || e.metaKey;
+      const target = e.target as HTMLElement | null;
+      const inInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+
       if (meta && e.shiftKey && (e.key === 'P' || e.key === 'p')) {
         e.preventDefault();
         setPaletteOpen(true);
         return;
       }
       if (meta && !e.shiftKey && (e.key === 'k' || e.key === 'K')) {
-        // Skip if we're typing in an input (let the input handle it).
-        const target = e.target as HTMLElement | null;
-        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
-          // Allow Ctrl+K from the editor textarea too — it's a high-value shortcut.
-        }
         e.preventDefault();
         setPaletteOpen(true);
+        return;
+      }
+      // ? or F1 → keyboard shortcut help. Skip when typing in an input.
+      if (!inInput && !meta && (e.key === '?' || e.key === 'F1')) {
+        e.preventDefault();
+        setShortcutsOpen(true);
       }
     }
     window.addEventListener('keydown', onKey);
@@ -385,6 +416,7 @@ export function DocumentStudio() {
       // Navigate
       { id: 'goto-coverage', category: 'Navigate', label: 'Open Standards Coverage', action: () => { window.location.href = '/edi-notepad/coverage'; } },
       { id: 'goto-segments', category: 'Navigate', label: 'Open Segment Dictionary', action: () => { window.location.href = '/edi-notepad/coverage/segments'; } },
+      { id: 'shortcuts',     category: 'Navigate', label: 'Keyboard Shortcuts',      action: () => setShortcutsOpen(true), shortcut: '?' },
     ];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeDoc.hasValidDocument, activeDoc.rawContent, treePanelCollapsed, activeDocId]);
@@ -501,6 +533,8 @@ export function DocumentStudio() {
       <Toolbar
         standard={activeDoc.standard}
         hasValidDocument={activeDoc.hasValidDocument}
+        hasContent={activeDoc.rawContent.length > 0}
+        inBusinessOrHexView={activeDoc.viewMode !== 'raw'}
         onFileLoad={handleFileLoad}
         onConvert={handleConvert}
         onClear={handleClear}
@@ -525,6 +559,7 @@ export function DocumentStudio() {
           errors={activeDoc.errors}
           initialContent={activeDoc.initialContent}
           activeSegmentLine={activeDoc.activeSegmentLine}
+          hierarchy={activeDoc.hierarchy}
           rawContent={activeDoc.rawContent}
           parseResult={parseResult}
           viewMode={activeDoc.viewMode}
@@ -564,6 +599,11 @@ export function DocumentStudio() {
         open={paletteOpen}
         commands={commands}
         onClose={() => setPaletteOpen(false)}
+      />
+
+      <ShortcutsModal
+        open={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
       />
 
       <NewDocumentModal

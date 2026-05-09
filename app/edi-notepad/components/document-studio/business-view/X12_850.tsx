@@ -6,7 +6,9 @@ import {
   renderParty,
   poTypeLabel,
   purposeLabel,
+  statusPillFor,
 } from './helpers';
+import { ErrorPanel } from './ErrorPanel';
 
 interface LineItem {
   line: string;
@@ -58,13 +60,19 @@ export function renderX12_850(block: TxnBlock) {
   const totalLines = ctt?.elements[0]?.trim();
   const currency = cur?.elements[1]?.trim();
 
+  const status = statusPillFor('850', segs);
+
   return (
     <>
       <header className="ds-bv-doc__header">
         <div>
-          <h1 className="ds-bv-doc__title">Purchase Order</h1>
+          <div className="ds-bv-doc__titlerow">
+            <h1 className="ds-bv-doc__title">Purchase Order</h1>
+            {status && <span className={`ds-bv-status ds-bv-status--${status.tone}`}>{status.label}</span>}
+          </div>
           <div className="ds-bv-doc__subtitle">
             X12 850 · {block.context.sender ?? '—'} → {block.context.receiver ?? '—'}
+            {block.context.interchangeControl && <> · ICN <span className="ds-bv-mono">{block.context.interchangeControl}</span></>}
           </div>
         </div>
         <div className="ds-bv-doc__meta">
@@ -75,6 +83,14 @@ export function renderX12_850(block: TxnBlock) {
           {currency && <div><span className="ds-bv-meta-label">Currency</span><span className="ds-bv-meta-value">{currency}</span></div>}
         </div>
       </header>
+
+      {block.errors.length > 0 && (
+        <ErrorPanel
+          errors={block.errors}
+          envelopeLabel={block.context.sender && block.context.receiver ? `${block.context.sender} → ${block.context.receiver}` : undefined}
+          onSelect={block.onErrorClick}
+        />
+      )}
 
       {parties.length > 0 && (
         <section className="ds-bv-section">

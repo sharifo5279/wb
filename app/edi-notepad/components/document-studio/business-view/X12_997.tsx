@@ -1,4 +1,5 @@
 import type { TxnBlock } from './BusinessView';
+import { ErrorPanel } from './ErrorPanel';
 
 const AK_STATUS: Record<string, string> = {
   A: 'Accepted',
@@ -73,6 +74,10 @@ export function renderX12_997(block: TxnBlock) {
           </div>
         </div>
       </header>
+
+      {block.errors.length > 0 && (
+        <ErrorPanel errors={block.errors} onSelect={block.onErrorClick} />
+      )}
 
       <section className="ds-bv-section">
         <h2 className="ds-bv-section__title">Group Summary</h2>

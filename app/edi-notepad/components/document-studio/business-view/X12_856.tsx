@@ -1,6 +1,7 @@
 import type { Segment } from '@/src/lib/edi/types';
 import type { TxnBlock } from './BusinessView';
-import { formatDate, formatTime, collectN1Loops, renderParty } from './helpers';
+import { formatDate, formatTime, collectN1Loops, renderParty, statusPillFor } from './helpers';
+import { ErrorPanel } from './ErrorPanel';
 
 const HL_LEVEL_LABEL: Record<string, string> = {
   S: 'Shipment', O: 'Order', T: 'Tare', P: 'Pack', I: 'Item', F: 'Feature',
@@ -83,13 +84,19 @@ export function renderX12_856(block: TxnBlock) {
   const parties = collectN1Loops(segs);
   const tree = buildHLTree(segs);
 
+  const status = statusPillFor('856', segs);
+
   return (
     <>
       <header className="ds-bv-doc__header">
         <div>
-          <h1 className="ds-bv-doc__title">Advance Ship Notice</h1>
+          <div className="ds-bv-doc__titlerow">
+            <h1 className="ds-bv-doc__title">Advance Ship Notice</h1>
+            {status && <span className={`ds-bv-status ds-bv-status--${status.tone}`}>{status.label}</span>}
+          </div>
           <div className="ds-bv-doc__subtitle">
             X12 856 · {block.context.sender ?? '—'} → {block.context.receiver ?? '—'}
+            {block.context.interchangeControl && <> · ICN <span className="ds-bv-mono">{block.context.interchangeControl}</span></>}
           </div>
         </div>
         <div className="ds-bv-doc__meta">
@@ -99,6 +106,10 @@ export function renderX12_856(block: TxnBlock) {
           <div><span className="ds-bv-meta-label">Purpose</span><span className="ds-bv-meta-value">{purpose}</span></div>
         </div>
       </header>
+
+      {block.errors.length > 0 && (
+        <ErrorPanel errors={block.errors} onSelect={block.onErrorClick} />
+      )}
 
       {parties.length > 0 && (
         <section className="ds-bv-section">
