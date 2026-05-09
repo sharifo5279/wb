@@ -12,6 +12,10 @@ import { ErrorDrawer } from './ErrorDrawer';
 
 interface BusinessViewProps {
   parseResult: ParseResult | null;
+  /** When false, renderers hide the inline ErrorPanel and the warn-row
+   *  treatment on line items. The Error Drawer remains reachable from
+   *  any future surface; only the in-document treatment is muted. */
+  showErrors?: boolean;
 }
 
 /** Slice of segments for one transaction set, plus envelope context. */
@@ -35,6 +39,8 @@ export interface TxnBlock {
   };
   /** Callback installed by BusinessView so renderers can open the drawer. */
   onErrorClick?: (errorIdx: number) => void;
+  /** When false, renderers hide ErrorPanel + warn-row treatment. */
+  showErrors?: boolean;
 }
 
 /** Walk the parse result and extract one TxnBlock per ST..SE / UNH..UNT pair. */
@@ -149,7 +155,7 @@ function renderBlock(block: TxnBlock) {
  * extracts one or more transaction blocks and dispatches each to the
  * transaction-specific renderer (or a generic fallback).
  */
-export function BusinessView({ parseResult }: BusinessViewProps) {
+export function BusinessView({ parseResult, showErrors = true }: BusinessViewProps) {
   // Drawer state — { blockIdx, errorIdx } or null when closed.
   const [drawer, setDrawer] = useState<{ blockIdx: number; errorIdx: number } | null>(null);
 
@@ -174,6 +180,7 @@ export function BusinessView({ parseResult }: BusinessViewProps) {
   const annotated = blocks.map((b, idx) => ({
     ...b,
     onErrorClick: (errorIdx: number) => setDrawer({ blockIdx: idx, errorIdx }),
+    showErrors,
   }));
 
   const drawerBlock = drawer ? annotated[drawer.blockIdx] : null;

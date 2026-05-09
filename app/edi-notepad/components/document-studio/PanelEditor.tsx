@@ -6,6 +6,7 @@ import type { DocumentStandard, ViewMode } from './DocumentStudio';
 import { EDIEditor } from './EDIEditor';
 import { HexView } from './HexView';
 import { BusinessView } from './business-view/BusinessView';
+import { ErrorPanel } from './business-view/ErrorPanel';
 import { EditorBreadcrumb } from './EditorBreadcrumb';
 
 interface PanelEditorProps {
@@ -61,6 +62,9 @@ export function PanelEditor({
 
   const [cursorLine,    setCursorLine]    = useState(1);
   const [segmentCount,  setSegmentCount]  = useState(0);
+  // Shared show/hide errors toggle — applies to both Raw and Business views
+  // so users can hide validation noise while reviewing a document. Default on.
+  const [showErrors,    setShowErrors]    = useState(true);
 
   const handleCursorChange = useCallback((line: number) => {
     setCursorLine(line);
@@ -96,6 +100,22 @@ export function PanelEditor({
             );
           })}
         </div>
+
+        {(viewMode === 'raw' || viewMode === 'business') && errorCount > 0 && (
+          <button
+            type="button"
+            className={`ds-errors-toggle${showErrors ? ' ds-errors-toggle--on' : ''}`}
+            onClick={() => setShowErrors((v) => !v)}
+            aria-pressed={showErrors}
+            title={showErrors ? 'Hide validation errors' : 'Show validation errors'}
+          >
+            <span className="ds-errors-toggle__glyph" aria-hidden="true">⚠</span>
+            <span className="ds-errors-toggle__label">
+              {showErrors ? 'Hide' : 'Show'} errors
+            </span>
+            <span className="ds-errors-toggle__count">{errorCount}</span>
+          </button>
+        )}
       </div>
 
       {viewMode === 'raw' && hasValidDocument && (
@@ -108,17 +128,33 @@ export function PanelEditor({
         aria-label="Active document view"
       >
         {viewMode === 'raw' && (
-          <EDIEditor
-            initialContent={initialContent}
-            activeSegmentLine={activeSegmentLine}
-            onDocumentLoaded={onDocumentLoaded}
-            onCursorChange={handleCursorChange}
-            onSegmentCountChange={setSegmentCount}
-            onRawChange={onRawChange}
-          />
+          <>
+            {showErrors && errors.length > 0 && (
+              <div className="ds-raw-errors">
+                <ErrorPanel
+                  errors={errors}
+                  onSelect={(idx) => {
+                    // Jump to the error's line by routing through the parent's
+                    // activeSegmentLine; EDIEditor scrolls + highlights it.
+                    const line = errors[idx]?.line;
+                    if (line) onCursorChange(line);
+                  }}
+                />
+              </div>
+            )}
+            <EDIEditor
+              initialContent={initialContent}
+              activeSegmentLine={activeSegmentLine}
+              onDocumentLoaded={onDocumentLoaded}
+              onCursorChange={handleCursorChange}
+              onSegmentCountChange={setSegmentCount}
+              onRawChange={onRawChange}
+              suppressInlineErrors={!showErrors}
+            />
+          </>
         )}
         {viewMode === 'business' && (
-          <BusinessView parseResult={parseResult} />
+          <BusinessView parseResult={parseResult} showErrors={showErrors} />
         )}
         {viewMode === 'hex' && (
           <HexView text={rawContent} parseResult={parseResult} />

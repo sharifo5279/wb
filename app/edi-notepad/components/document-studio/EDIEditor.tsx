@@ -51,6 +51,10 @@ export interface EDIEditorProps {
    * Lets DocumentStudio keep a copy of the raw text for AI prompts.
    */
   onRawChange?: (raw: string) => void;
+  /** When true, EditorLine drops the red tint + segment-id underline so the
+   *  user can read the document without validation noise. The hover tooltip
+   *  is hidden too. Defaults to false (errors visible). */
+  suppressInlineErrors?: boolean;
 }
 
 // ─── Delimiter helpers ────────────────────────────────────────────────────────
@@ -145,6 +149,7 @@ export function EDIEditor({
   onCursorChange,
   onSegmentCountChange,
   onRawChange,
+  suppressInlineErrors = false,
 }: EDIEditorProps) {
   // ── Resolve the initial text ───────────────────────────────────────────────
   // null   → first load, show PLACEHOLDER so the editor isn't empty
@@ -594,7 +599,7 @@ export function EDIEditor({
           const lineNum = idx + 1;
           const seg     = lineMap.get(lineNum) ?? null;
           const isLoop  = seg ? loopLines.has(seg.line) : false;
-          const lineErr = errorMap.get(lineNum) ?? [];
+          const lineErr = suppressInlineErrors ? [] : (errorMap.get(lineNum) ?? []);
           const isActive = lineNum === cursorLine || lineNum === activeSegmentLine;
 
           return (
