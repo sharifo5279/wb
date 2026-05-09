@@ -4036,3 +4036,150 @@ body {
   letter-spacing: 0.06em;
   color: var(--wb-text-muted);
 }
+
+/* ─── Mobile (≤ 768px): let the whole page scroll naturally ─────────────── */
+/*
+ * The desktop layout uses height: 100vh + overflow: hidden so the segment
+ * tree, editor, and modals each manage their own scrolling. On mobile this
+ * collapses into a single tall page that scrolls top-to-bottom.
+ *
+ * No layout refactor — just unlocking the height/overflow constraints and
+ * stacking the two main panels vertically.
+ */
+@media (max-width: 768px) {
+  html, body {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  body {
+    overflow: auto;
+  }
+
+  /* Workbench shell + layout containers — stop forcing viewport height. */
+  .wb-shell,
+  .ds-layout {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  /* Doc tabs: allow horizontal scroll if many tabs are open. */
+  .ds-doctabs__row {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Toolbar: wrap onto multiple rows so buttons stay reachable on narrow screens. */
+  .ds-toolbar {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 44px;
+    padding: 6px 8px;
+    gap: 6px;
+  }
+
+  .ds-toolbar__group {
+    flex-wrap: wrap;
+  }
+
+  .ds-toolbar__brand {
+    padding: 0 6px;
+  }
+
+  /* Panels: stack vertically. Tree above, editor below. */
+  .ds-panels {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+
+  .ds-panel-tree {
+    width: 100% !important;
+    max-width: none;
+    height: auto;
+    min-height: 200px;
+    max-height: 50vh;
+    overflow-y: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--wb-border);
+  }
+
+  .ds-panel-tree--collapsed {
+    min-height: 36px;
+    max-height: 36px;
+  }
+
+  .ds-panel-editor {
+    width: 100%;
+    height: auto;
+    min-height: 60vh;
+    overflow: visible;
+  }
+
+  .ds-panel__body {
+    height: auto;
+    min-height: 240px;
+    overflow: visible;
+  }
+
+  /* Editor surface — keep its own scroll for the textarea, but cap a height
+     so it doesn't push the page indefinitely. */
+  .ds-edi-editor {
+    height: auto;
+    min-height: 60vh;
+  }
+  .ds-edi-editor__scroller {
+    max-height: 70vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Coverage / detail pages — already scroll, just need their parent to release. */
+  .np-cov-page {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+    padding: 16px 16px 32px;
+  }
+
+  .np-cov-page__header {
+    max-width: 100%;
+  }
+
+  .np-cov-section,
+  .np-cov-segbrowser__controls,
+  .np-cov-filter-bar {
+    max-width: 100%;
+  }
+
+  /* Tables: enable horizontal scroll on overflow. */
+  .np-cov-table-wrap,
+  .np-cov-eltable {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Modals: take the full screen on mobile. */
+  .cm-overlay {
+    align-items: flex-start;
+    padding: 0;
+  }
+  .cm-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 100vh !important;
+    border-radius: 0;
+  }
+
+  /* Status bar shrinks but stays visible at the bottom. */
+  .wb-statusbar {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 22px;
+    font-size: 10.5px;
+    padding: 4px 8px;
+  }
+}
