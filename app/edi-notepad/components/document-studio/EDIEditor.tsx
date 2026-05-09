@@ -169,6 +169,7 @@ export function EDIEditor({
   const [findQuery,       setFindQuery]       = useState('');
   const [findReplace,     setFindReplace]     = useState('');
   const [findCase,        setFindCase]        = useState(false);
+  const [findRegex,       setFindRegex]       = useState(false);
   const [findIdx,         setFindIdx]         = useState(0);
 
   // ── Element-edit popover state ────────────────────────────────────────────
@@ -208,11 +209,11 @@ export function EDIEditor({
   const loopLines = useMemo(() => collectLoopIds(hierarchy), [hierarchy]);
   const errorMap  = useMemo(() => buildErrorMap(errors), [errors]);
 
-  // Find — recompute match positions whenever the bar is open and query/case/content change
+  // Find — recompute match positions whenever the bar is open and query/case/regex/content change
   const findMatches = useMemo(() => {
     if (!findOpen || !findQuery) return [];
-    return computeMatches(content, findQuery, findCase);
-  }, [findOpen, findQuery, findCase, content]);
+    return computeMatches(content, findQuery, findCase, findRegex);
+  }, [findOpen, findQuery, findCase, findRegex, content]);
 
   // ── Mount-time parse ────────────────────────────────────────────────────────
   // Fires once on mount (or remount when editorKey changes in DocumentStudio).
@@ -386,8 +387,8 @@ export function EDIEditor({
 
   const replaceCurrent = useCallback(() => {
     if (findMatches.length === 0 || !findQuery) return;
-    const start = findMatches[findIdx];
-    const newContent = content.slice(0, start) + findReplace + content.slice(start + findQuery.length);
+    const { start, length } = findMatches[findIdx];
+    const newContent = content.slice(0, start) + findReplace + content.slice(start + length);
     setContent(newContent);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     runParse(newContent);
@@ -398,8 +399,8 @@ export function EDIEditor({
     if (findMatches.length === 0 || !findQuery) return;
     let out = content;
     for (let i = findMatches.length - 1; i >= 0; i--) {
-      const start = findMatches[i];
-      out = out.slice(0, start) + findReplace + out.slice(start + findQuery.length);
+      const { start, length } = findMatches[i];
+      out = out.slice(0, start) + findReplace + out.slice(start + length);
     }
     setContent(out);
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -421,8 +422,8 @@ export function EDIEditor({
     if (!findOpen || findMatches.length === 0) return;
     const ta = textareaRef.current;
     if (!ta) return;
-    const start = findMatches[findIdx];
-    const end = start + findQuery.length;
+    const { start, length } = findMatches[findIdx];
+    const end = start + length;
     // Use selection so the browser scrolls the textarea naturally; but also
     // scroll the rendered line into view via lineRefs (since the visible
     // layer is the styled div, not the textarea).
@@ -556,6 +557,7 @@ export function EDIEditor({
         currentMatch={findMatches.length === 0 ? 0 : findIdx + 1}
         showReplace={findShowReplace}
         caseSensitive={findCase}
+        regex={findRegex}
         onQueryChange={setFindQuery}
         onReplaceQueryChange={setFindReplace}
         onPrev={prevMatch}
@@ -564,6 +566,7 @@ export function EDIEditor({
         onReplaceAll={replaceAllMatches}
         onToggleReplace={() => setFindShowReplace((v) => !v)}
         onToggleCase={() => setFindCase((v) => !v)}
+        onToggleRegex={() => setFindRegex((v) => !v)}
         onClose={closeFind}
       />
 

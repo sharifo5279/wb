@@ -94,6 +94,28 @@ export function CoverageView({ entries }: CoverageViewProps) {
   const tradacoms = filtered.filter((e) => e.standard === 'TRADACOMS');
   const totalComplete = filtered.filter(isComplete).length;
 
+  function exportCsv() {
+    const header = ['Standard', 'Version', 'Code', 'Name', 'Industry', 'Supported Versions', 'Status'];
+    const rows = filtered.map((e) => [
+      e.standard,
+      e.version,
+      e.code,
+      e.name,
+      e.industry,
+      e.supportedVersions.join('|'),
+      isComplete(e) ? 'Complete' : 'Incomplete',
+    ]);
+    const escape = (v: string) => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+    const csv = [header, ...rows].map((r) => r.map(escape).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `edi-notepad-coverage-${versionFilter === 'all' ? 'all' : versionFilter}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <>
       <div className="np-cov-filter-bar">
@@ -119,6 +141,14 @@ export function CoverageView({ entries }: CoverageViewProps) {
           <strong>{totalComplete}</strong> of <strong>{filtered.length}</strong> complete
           {versionFilter !== 'all' && ` for ${versionFilter}`}
         </span>
+        <button
+          type="button"
+          className="np-cov-export"
+          onClick={exportCsv}
+          title="Download visible coverage as CSV"
+        >
+          Export CSV
+        </button>
       </div>
 
       <CoverageTable title="ANSI X12" entries={x12} />

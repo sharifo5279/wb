@@ -132,6 +132,17 @@ export function bakAckLabel(code: string): string {
 export interface StatusPill {
   label: string;
   tone: 'ok' | 'warn' | 'error' | 'neutral';
+  /** Glyph alongside the label so colour isn't the only differentiator
+   *  (matters for protan/deutan colour-blind users). */
+  glyph: '✓' | '⚠' | '✕' | '○';
+}
+
+function pill(label: string, tone: StatusPill['tone']): StatusPill {
+  const glyph: StatusPill['glyph'] =
+    tone === 'ok' ? '✓' :
+    tone === 'warn' ? '⚠' :
+    tone === 'error' ? '✕' : '○';
+  return { label, tone, glyph };
 }
 
 /**
@@ -144,23 +155,34 @@ export function statusPillFor(setCode: string, segments: Array<{ id: string; ele
     const beg = segments.find((s) => s.id === 'BEG' || s.id === 'BCH' || s.id === 'BIG');
     const purpose = beg?.elements[0]?.trim();
     if (!purpose) return null;
-    return { label: purposeLabel(purpose), tone: purpose === '00' ? 'ok' : 'neutral' };
+    return pill(purposeLabel(purpose), purpose === '00' ? 'ok' : 'neutral');
   }
   if (setCode === '855' || setCode === '865') {
     const bak = segments.find((s) => s.id === 'BAK' || s.id === 'BCA');
     const type = bak?.elements[1]?.trim();
     if (!type) return null;
     const tone: StatusPill['tone'] = type === 'AC' || type === 'AD' || type === 'AK' || type === 'AP' ? 'ok' : (type === 'RD' || type === 'RF' ? 'error' : 'neutral');
-    return { label: bakAckLabel(type), tone };
+    return pill(bakAckLabel(type), tone);
   }
   if (setCode === '810' || setCode === '880') {
-    return { label: 'Open', tone: 'warn' };
+    return pill('Open', 'warn');
+  }
+  if (setCode === '820') {
+    const bpr = segments.find((s) => s.id === 'BPR');
+    const handling = bpr?.elements[0]?.trim();
+    return pill(handling === 'I' ? 'Information Only' : handling === 'C' ? 'Credit' : handling === 'D' ? 'Debit' : 'Payment', 'ok');
+  }
+  if (setCode === '940' || setCode === '945' || setCode === '943' || setCode === '944' || setCode === '947') {
+    return pill(setCode === '940' ? 'Order' : setCode === '945' ? 'Shipped' : setCode === '944' ? 'Received' : 'Adjustment', 'ok');
+  }
+  if (setCode === '204' || setCode === '214') {
+    return pill(setCode === '204' ? 'Tender' : 'Status', 'neutral');
   }
   if (setCode === '856') {
     const bsn = segments.find((s) => s.id === 'BSN');
     const purpose = bsn?.elements[0]?.trim();
     if (!purpose) return null;
-    return { label: purposeLabel(purpose), tone: purpose === '00' ? 'ok' : 'neutral' };
+    return pill(purposeLabel(purpose), purpose === '00' ? 'ok' : 'neutral');
   }
   if (setCode === '997' || setCode === '999') {
     const ak9 = segments.find((s) => s.id === 'AK9');
@@ -168,8 +190,15 @@ export function statusPillFor(setCode: string, segments: Array<{ id: string; ele
     if (!ack) return null;
     const tone: StatusPill['tone'] = ack === 'A' ? 'ok' : ack === 'E' ? 'warn' : 'error';
     const label = ack === 'A' ? 'Accepted' : ack === 'E' ? 'Accepted with Errors' : ack === 'P' ? 'Partial' : 'Rejected';
-    return { label, tone };
+    return pill(label, tone);
   }
+  // EDIFACT
+  if (setCode === 'ORDERS' || setCode === 'ORDRSP' || setCode === 'ORDCHG') {
+    return pill('Order', 'ok');
+  }
+  if (setCode === 'INVOIC') return pill('Open', 'warn');
+  if (setCode === 'DESADV') return pill('Shipped', 'ok');
+  if (setCode === 'CONTRL') return pill('Acknowledgment', 'ok');
   return null;
 }
 

@@ -60,6 +60,18 @@ export function renderX12_850(block: TxnBlock) {
   const totalLines = ctt?.elements[0]?.trim();
   const currency = cur?.elements[1]?.trim();
 
+  // Compute subtotal = Σ(qty * unitPrice) over PO1 lines that have both numeric.
+  let subtotal = 0;
+  let anyAmount = false;
+  for (const it of items) {
+    const q = parseFloat(it.qty);
+    const p = parseFloat(it.unitPrice);
+    if (!Number.isNaN(q) && !Number.isNaN(p)) {
+      subtotal += q * p;
+      anyAmount = true;
+    }
+  }
+
   const status = statusPillFor('850', segs);
 
   return (
@@ -68,7 +80,12 @@ export function renderX12_850(block: TxnBlock) {
         <div>
           <div className="ds-bv-doc__titlerow">
             <h1 className="ds-bv-doc__title">Purchase Order</h1>
-            {status && <span className={`ds-bv-status ds-bv-status--${status.tone}`}>{status.label}</span>}
+            {status && (
+              <span className={`ds-bv-status ds-bv-status--${status.tone}`}>
+                <span className="ds-bv-status__glyph" aria-hidden="true">{status.glyph}</span>
+                {status.label}
+              </span>
+            )}
           </div>
           <div className="ds-bv-doc__subtitle">
             X12 850 · {block.context.sender ?? '—'} → {block.context.receiver ?? '—'}
@@ -133,24 +150,44 @@ export function renderX12_850(block: TxnBlock) {
                 <th className="ds-bv-num">Qty</th>
                 <th>UOM</th>
                 <th className="ds-bv-num">Unit Price</th>
+                <th className="ds-bv-num">Line Total</th>
               </tr>
             </thead>
             <tbody>
-              {items.map((it, i) => (
-                <tr key={i}>
-                  <td>{it.line || (i + 1).toString()}</td>
-                  <td className="ds-bv-mono">
-                    {it.productQual && <span className="ds-bv-pill">{it.productQual}</span>}{' '}
-                    {it.productId}
-                  </td>
-                  <td>{it.description || '—'}</td>
-                  <td className="ds-bv-num">{it.qty || '—'}</td>
-                  <td>{it.uom}</td>
-                  <td className="ds-bv-num">{formatAmount(it.unitPrice)}</td>
-                </tr>
-              ))}
+              {items.map((it, i) => {
+                const q = parseFloat(it.qty);
+                const p = parseFloat(it.unitPrice);
+                const line = !Number.isNaN(q) && !Number.isNaN(p) ? (q * p) : null;
+                const malformed = !it.productId || it.qty === '' || Number.isNaN(p);
+                return (
+                  <tr key={i} className={malformed ? 'ds-bv-row--warn' : undefined}>
+                    <td>{it.line || (i + 1).toString()}</td>
+                    <td className="ds-bv-mono">
+                      {it.productQual && <span className="ds-bv-pill">{it.productQual}</span>}{' '}
+                      {it.productId || <span className="ds-bv-muted">(no SKU)</span>}
+                    </td>
+                    <td>{it.description || '—'}</td>
+                    <td className="ds-bv-num">{it.qty || '—'}</td>
+                    <td>{it.uom || (malformed ? <span className="ds-bv-warn-mark" title="Missing UOM">*</span> : '')}</td>
+                    <td className="ds-bv-num">{formatAmount(it.unitPrice)}</td>
+                    <td className="ds-bv-num">{line !== null ? formatAmount(line.toString()) : '—'}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
+        </section>
+      )}
+
+      {anyAmount && (
+        <section className="ds-bv-section">
+          <h2 className="ds-bv-section__title">Totals</h2>
+          <div className="ds-bv-kv-grid">
+            <div className="ds-bv-kv ds-bv-kv--total">
+              <span className="ds-bv-kv__key">Subtotal{currency ? ` (${currency})` : ''}</span>
+              <span className="ds-bv-kv__value">{formatAmount(subtotal.toString())}</span>
+            </div>
+          </div>
         </section>
       )}
 

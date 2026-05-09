@@ -2,53 +2,89 @@ import type { ParseResult, Segment } from './types';
 
 // ─── Functional acknowledgment generation ────────────────────────────────────
 //
-// Builds an X12 997 (or EDIFACT CONTRL) document in response to an inbound
-// transaction. The acknowledgment status per transaction set is derived from
-// the parse errors attached to that ST..SE block:
+// Builds an X12 997 / 999, EDIFACT CONTRL, or TRADACOMS ACKHDR document in
+// response to an inbound transaction.
 //
-//   no errors                      → 'A' Accepted
-//   error severity, parser-only    → 'R' Rejected
-//   warning severity only          → 'E' Accepted with Errors
-//
-// Output is a complete EDI envelope (ISA…IEA for 997, UNB…UNZ for CONTRL)
-// that round-trips through `parseEDI()` with no mismatches.
+// Per-set status is derived from parse errors by default (any error → R,
+// warning-only → E, clean → A) but every status — per-set and overall — can
+// be overridden by the caller. Sender / receiver / control number / date /
+// time are all overridable too. The output round-trips through parseEDI()
+// with no envelope-level mismatches.
+
+export type AckStatus = 'A' | 'E' | 'R' | 'P';
+/** Which acknowledgment "variant" to emit. */
+export type AckVariant = '997' | '999' | 'CONTRL' | 'ACKHDR';
 
 export interface AckOptions {
+  /** Variant to emit. Defaults: X12 → '997', EDIFACT → 'CONTRL', TRADACOMS → 'ACKHDR'. */
+  variant?: AckVariant;
   /** Override sender ID. Defaults to swap of incoming receiver. */
   senderId?: string;
   /** Override receiver ID. Defaults to swap of incoming sender. */
   receiverId?: string;
-  /** Override interchange control number. Default: '000000001'. */
+  /** Override interchange control number. */
   controlNumber?: string;
-  /** Date for headers as CCYYMMDD. Default: today (UTC). */
+  /** Date as CCYYMMDD. Default: today (UTC). */
   date?: string;
-  /** Time for headers as HHMM. Default: now (UTC). */
+  /** Time as HHMM. Default: now (UTC). */
   time?: string;
+  /**
+   * Per-set status override, keyed by transaction-set control number.
+   * Lets the caller force `A` even when the parser found errors, or `R`
+   * even when the parser thought everything was clean. Missing keys fall
+   * back to the validation-derived status.
+   */
+  setStatusOverrides?: Record<string, AckStatus>;
+  /** Override the overall envelope-level status. */
+  overallStatusOverride?: AckStatus;
 }
 
 export interface AckSetStatus {
   set: string;
   control: string;
-  status: 'A' | 'E' | 'R';
+  status: AckStatus;
   errorCount: number;
+  /** Status that would have been assigned by error count alone. */
+  derivedStatus: AckStatus;
 }
 
 export interface AckResult {
   text: string;
   filename: string;
-  overallStatus: 'A' | 'E' | 'R' | 'P';
+  overallStatus: AckStatus;
   setStatuses: AckSetStatus[];
 }
 
 export function generateAck(result: ParseResult, options: AckOptions = {}): AckResult {
-  if (result.standard === 'X12') return generate997(result, options);
-  if (result.standard === 'EDIFACT') return generateContrl(result, options);
-  throw new Error(`generateAck: unsupported standard "${result.standard}"`);
+  const variant = options.variant ?? (
+    result.standard === 'X12' ? '997' :
+    result.standard === 'EDIFACT' ? 'CONTRL' :
+    result.standard === 'TRADACOMS' ? 'ACKHDR' :
+    null
+  );
+
+  if (!variant) {
+    throw new Error(`generateAck: unsupported standard "${result.standard}"`);
+  }
+
+  if (variant === '997' || variant === '999') {
+    if (result.standard !== 'X12') throw new Error(`generateAck: ${variant} requires an X12 source document`);
+    return generateX12Ack(result, options, variant);
+  }
+  if (variant === 'CONTRL') {
+    if (result.standard !== 'EDIFACT') throw new Error('generateAck: CONTRL requires an EDIFACT source document');
+    return generateContrl(result, options);
+  }
+  if (variant === 'ACKHDR') {
+    if (result.standard !== 'TRADACOMS') throw new Error('generateAck: ACKHDR requires a TRADACOMS source document');
+    return generateAckhdr(result, options);
+  }
+  throw new Error(`generateAck: unsupported variant "${variant}"`);
 }
 
-// ─── X12 997 ─────────────────────────────────────────────────────────────────
+// ─── X12 997 / 999 ───────────────────────────────────────────────────────────
 
-function generate997(result: ParseResult, opts: AckOptions): AckResult {
+function generateX12Ack(result: ParseResult, opts: AckOptions, variant: '997' | '999'): AckResult {
   const isa = result.segments.find((s) => s.id === 'ISA');
   const gs = result.segments.find((s) => s.id === 'GS');
   if (!isa || !gs) {
@@ -64,20 +100,24 @@ function generate997(result: ParseResult, opts: AckOptions): AckResult {
   const setStatuses: AckSetStatus[] = stBlocks.map((b) => {
     const errs = b.segments.flatMap((s) => s.errors).filter(severityIsError);
     const warns = b.segments.flatMap((s) => s.errors).filter(severityIsWarning);
-    const status: 'A' | 'E' | 'R' = errs.length > 0 ? 'R' : warns.length > 0 ? 'E' : 'A';
+    const derived: AckStatus = errs.length > 0 ? 'R' : warns.length > 0 ? 'E' : 'A';
+    const control = (b.start.elements[1] ?? '').trim();
+    const overridden = opts.setStatusOverrides?.[control];
     return {
       set: (b.start.elements[0] ?? '').trim(),
-      control: (b.start.elements[1] ?? '').trim(),
-      status,
+      control,
+      status: overridden ?? derived,
+      derivedStatus: derived,
       errorCount: errs.length,
     };
   });
 
   const accepted = setStatuses.filter((s) => s.status === 'A').length;
-  const overallStatus: AckResult['overallStatus'] =
-    setStatuses.every((s) => s.status === 'A') ? 'A'
-    : setStatuses.every((s) => s.status === 'R') ? 'R'
-    : accepted === 0 ? 'R' : 'P';
+  const overallStatus: AckStatus =
+    opts.overallStatusOverride ??
+    (setStatuses.every((s) => s.status === 'A') ? 'A'
+     : setStatuses.every((s) => s.status === 'R') ? 'R'
+     : accepted === 0 ? 'R' : 'P');
 
   const ctrl = opts.controlNumber ?? '000000001';
   const now = nowParts();
@@ -88,16 +128,20 @@ function generate997(result: ParseResult, opts: AckOptions): AckResult {
   const senderPad = pad(sender, 15);
   const receiverPad = pad(receiver, 15);
 
-  // Inside the envelope: ST .. AK1 .. AK2/AK5 .. AK9 .. SE
   const inner: string[] = [];
-  inner.push('ST*997*0001');
+  inner.push(`ST*${variant}*0001`);
   inner.push(`AK1*${(gs.elements[0] ?? '').trim()}*${(gs.elements[5] ?? '').trim()}`);
   for (const ss of setStatuses) {
-    inner.push(`AK2*${ss.set}*${ss.control}`);
-    inner.push(`AK5*${ss.status}`);
+    if (variant === '997') {
+      inner.push(`AK2*${ss.set}*${ss.control}`);
+      inner.push(`AK5*${ss.status}`);
+    } else {
+      // 999 — same shape but allowed to carry IK3/IK4 detail (we don't generate those here)
+      inner.push(`AK2*${ss.set}*${ss.control}`);
+      inner.push(`IK5*${ss.status}`);
+    }
   }
   inner.push(`AK9*${overallStatus}*${setStatuses.length}*${setStatuses.length}*${accepted}`);
-  // SE01 = number of segments from ST to SE inclusive (current count + the SE line itself)
   inner.push(`SE*${inner.length + 1}*0001`);
 
   const isaSeg =
@@ -111,7 +155,7 @@ function generate997(result: ParseResult, opts: AckOptions): AckResult {
 
   return {
     text,
-    filename: `997_${trimLeadingZeros(ctrl) || '1'}.edi`,
+    filename: `${variant}_${trimLeadingZeros(ctrl) || '1'}.edi`,
     overallStatus,
     setStatuses,
   };
@@ -135,26 +179,30 @@ function generateContrl(result: ParseResult, opts: AckOptions): AckResult {
   const setStatuses: AckSetStatus[] = unhBlocks.map((b) => {
     const errs = b.segments.flatMap((s) => s.errors).filter(severityIsError);
     const warns = b.segments.flatMap((s) => s.errors).filter(severityIsWarning);
-    const status: 'A' | 'E' | 'R' = errs.length > 0 ? 'R' : warns.length > 0 ? 'E' : 'A';
+    const derived: AckStatus = errs.length > 0 ? 'R' : warns.length > 0 ? 'E' : 'A';
     const composite = b.start.elements[1] ?? '';
+    const control = (b.start.elements[0] ?? '').trim();
+    const overridden = opts.setStatusOverrides?.[control];
     return {
       set: composite.split(':')[0]?.trim() ?? '',
-      control: (b.start.elements[0] ?? '').trim(),
-      status,
+      control,
+      status: overridden ?? derived,
+      derivedStatus: derived,
       errorCount: errs.length,
     };
   });
 
   const accepted = setStatuses.filter((s) => s.status === 'A').length;
-  const overallStatus: AckResult['overallStatus'] =
-    setStatuses.every((s) => s.status === 'A') ? 'A'
-    : setStatuses.every((s) => s.status === 'R') ? 'R'
-    : accepted === 0 ? 'R' : 'P';
+  const overallStatus: AckStatus =
+    opts.overallStatusOverride ??
+    (setStatuses.every((s) => s.status === 'A') ? 'A'
+     : setStatuses.every((s) => s.status === 'R') ? 'R'
+     : accepted === 0 ? 'R' : 'P');
   const overallEdiCode = overallStatus === 'A' ? '7' : overallStatus === 'R' ? '4' : '8';
 
   const ctrl = opts.controlNumber ?? '1';
   const now = nowParts();
-  const date = (opts.date ?? now.ccyymmdd).slice(2); // EDIFACT typically YYMMDD
+  const date = (opts.date ?? now.ccyymmdd).slice(2);
   const hhmm = opts.time ?? now.hhmm;
 
   const inner: string[] = [];
@@ -174,6 +222,62 @@ function generateContrl(result: ParseResult, opts: AckOptions): AckResult {
   return {
     text,
     filename: `CONTRL_${ctrl}.edi`,
+    overallStatus,
+    setStatuses,
+  };
+}
+
+// ─── TRADACOMS ACKHDR ────────────────────────────────────────────────────────
+
+function generateAckhdr(result: ParseResult, opts: AckOptions): AckResult {
+  const stx = result.segments.find((s) => s.id === 'STX');
+  if (!stx) {
+    throw new Error('generateAck: incoming TRADACOMS document missing STX envelope');
+  }
+
+  const incomingSender = (stx.elements[1] ?? '').split(':')[0]?.trim() ?? '';
+  const incomingReceiver = (stx.elements[2] ?? '').split(':')[0]?.trim() ?? '';
+  const sender = opts.senderId ?? (incomingReceiver || 'ACKSND');
+  const receiver = opts.receiverId ?? (incomingSender || 'ACKRCV');
+
+  // Each MHD..MTR is a "message" we acknowledge.
+  const mhdBlocks = collectBlocks(result.segments, 'MHD', 'MTR');
+  const setStatuses: AckSetStatus[] = mhdBlocks.map((b) => {
+    const errs = b.segments.flatMap((s) => s.errors).filter(severityIsError);
+    const composite = b.start.elements[1] ?? '';
+    const control = (b.start.elements[0] ?? '').trim();
+    const derived: AckStatus = errs.length > 0 ? 'R' : 'A';
+    const overridden = opts.setStatusOverrides?.[control];
+    return {
+      set: composite.split(':')[0]?.trim() ?? '',
+      control,
+      status: overridden ?? derived,
+      derivedStatus: derived,
+      errorCount: errs.length,
+    };
+  });
+
+  const overallStatus: AckStatus =
+    opts.overallStatusOverride ??
+    (setStatuses.every((s) => s.status === 'A') ? 'A'
+     : setStatuses.every((s) => s.status === 'R') ? 'R'
+     : 'P');
+
+  const ctrl = opts.controlNumber ?? '1';
+  const now = nowParts();
+  const yymmdd = (opts.date ?? now.ccyymmdd).slice(2);
+
+  const stxLine = `STX=ANA:1+${sender}:${sender}+${receiver}:${receiver}+${yymmdd}:${ctrl}+${ctrl}`;
+  const ackLines = setStatuses.map((s) => `ACK=${s.control || '0'}+${s.status === 'A' ? 'AC' : 'RJ'}`);
+  const messageInner = ['MHD=1+ACKHDR:9', ...ackLines];
+  messageInner.push(`MTR=${messageInner.length + 1}`);
+  const endLine = 'END=1';
+
+  const text = [stxLine, ...messageInner, endLine].map((s) => s + "'").join('\n');
+
+  return {
+    text,
+    filename: `ACKHDR_${ctrl}.edi`,
     overallStatus,
     setStatuses,
   };

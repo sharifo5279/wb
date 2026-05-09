@@ -1,5 +1,81 @@
 import type { ParseResult, ParseError, Segment } from './types';
-import { getX12Transaction, getEdifactMessage } from './dictionaries';
+import {
+  getX12Transaction,
+  getEdifactMessage,
+  getX12Segment,
+  getEdifactSegment,
+  getTradacomsSegment,
+} from './dictionaries';
+import type { ElementDef } from './dictionaries';
+
+/**
+ * Element-level checks against the curated dictionary. Emitted as
+ * `severity: 'warning'` so they don't poison ACK status by default; the
+ * user can still filter them. Checks: data-type pattern, length range,
+ * code-list membership.
+ */
+function validateElements(
+  result: ParseResult,
+  lookup: (id: string) => { elements: ElementDef[] } | undefined,
+): void {
+  for (const seg of result.segments) {
+    const def = lookup(seg.id);
+    if (!def) continue;
+    seg.elements.forEach((value, idx) => {
+      const trimmed = value.trim();
+      if (trimmed === '') return; // empty optional element — fine
+      const ed = def.elements[idx];
+      if (!ed) return;
+
+      // Length check uses the raw value (not trimmed) since EDI fixed-width
+      // fields pad with trailing spaces (e.g. ISA fields are 15 chars).
+      if (ed.maxLength > 0 && value.length > ed.maxLength) {
+        const err: ParseError = {
+          line: seg.line, segmentId: seg.id, severity: 'warning',
+          message: `Element ${seg.id}${(idx + 1).toString().padStart(2, '0')} length ${value.length} exceeds max ${ed.maxLength} (${ed.name})`,
+        };
+        seg.errors.push(err);
+        result.errors.push(err);
+      }
+
+      // Type check (lightweight — we don't reject AN since composites land here)
+      if (ed.type === 'N0' && !/^-?\d+$/.test(trimmed)) {
+        const err: ParseError = {
+          line: seg.line, segmentId: seg.id, severity: 'warning',
+          message: `Element ${seg.id}${(idx + 1).toString().padStart(2, '0')} should be an integer (got "${trimmed}")`,
+        };
+        seg.errors.push(err);
+        result.errors.push(err);
+      }
+      if (ed.type === 'R' && !/^-?\d+(\.\d+)?$/.test(trimmed)) {
+        const err: ParseError = {
+          line: seg.line, segmentId: seg.id, severity: 'warning',
+          message: `Element ${seg.id}${(idx + 1).toString().padStart(2, '0')} should be a decimal (got "${trimmed}")`,
+        };
+        seg.errors.push(err);
+        result.errors.push(err);
+      }
+      if (ed.type === 'DT' && !/^\d{6}(\d{2})?$/.test(trimmed)) {
+        const err: ParseError = {
+          line: seg.line, segmentId: seg.id, severity: 'warning',
+          message: `Element ${seg.id}${(idx + 1).toString().padStart(2, '0')} should be a date YYMMDD or CCYYMMDD (got "${trimmed}")`,
+        };
+        seg.errors.push(err);
+        result.errors.push(err);
+      }
+
+      // Code list — only when an exhaustive code map is present
+      if (ed.type === 'ID' && ed.codes && !ed.codes[trimmed]) {
+        const err: ParseError = {
+          line: seg.line, segmentId: seg.id, severity: 'warning',
+          message: `Element ${seg.id}${(idx + 1).toString().padStart(2, '0')} value "${trimmed}" is not in the documented code list for ${ed.name}`,
+        };
+        seg.errors.push(err);
+        result.errors.push(err);
+      }
+    });
+  }
+}
 
 // ─── Cross-segment validation ────────────────────────────────────────────────
 //
@@ -15,6 +91,7 @@ import { getX12Transaction, getEdifactMessage } from './dictionaries';
  * Mutates `result.errors` and per-segment `errors[]` to add the new findings.
  */
 export function validateX12(result: ParseResult): void {
+  validateElements(result, getX12Segment);
   const segments = result.segments;
   const idToIdx: Map<string, number[]> = new Map();
   for (let i = 0; i < segments.length; i++) {
@@ -122,6 +199,7 @@ export function validateX12(result: ParseResult): void {
  * segments for messages with curated structure.
  */
 export function validateEdifact(result: ParseResult): void {
+  validateElements(result, getEdifactSegment);
   const segments = result.segments;
   const idToIdx: Map<string, number[]> = new Map();
   for (let i = 0; i < segments.length; i++) {
