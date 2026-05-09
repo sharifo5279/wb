@@ -1,4 +1,5 @@
 import type { TxnBlock } from './BusinessView';
+import { ErrorPanel } from './ErrorPanel';
 
 /**
  * Fallback renderer for transaction sets without a dedicated business view.
@@ -29,6 +30,10 @@ export function renderGeneric(block: TxnBlock) {
           </div>
         </div>
       </header>
+
+      {block.errors.length > 0 && (
+        <ErrorPanel errors={block.errors} onSelect={block.onErrorClick} />
+      )}
 
       <section className="ds-bv-section">
         <h2 className="ds-bv-section__title">

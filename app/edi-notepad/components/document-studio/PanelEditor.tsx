@@ -6,6 +6,7 @@ import type { DocumentStandard, ViewMode } from './DocumentStudio';
 import { EDIEditor } from './EDIEditor';
 import { HexView } from './HexView';
 import { BusinessView } from './business-view/BusinessView';
+import { EditorBreadcrumb } from './EditorBreadcrumb';
 
 interface PanelEditorProps {
   standard: DocumentStandard;
@@ -13,6 +14,8 @@ interface PanelEditorProps {
   errors: ParseError[];
   initialContent: string | null;
   activeSegmentLine: number | null;
+  /** Loop hierarchy used by the breadcrumb to render the segment path. */
+  hierarchy: SegmentNode[];
   rawContent: string;
   parseResult: ParseResult | null;
   viewMode: ViewMode;
@@ -45,6 +48,7 @@ export function PanelEditor({
   errors,
   initialContent,
   activeSegmentLine,
+  hierarchy,
   rawContent,
   parseResult,
   viewMode,
@@ -93,6 +97,10 @@ export function PanelEditor({
           })}
         </div>
       </div>
+
+      {viewMode === 'raw' && hasValidDocument && (
+        <EditorBreadcrumb hierarchy={hierarchy} activeSegmentLine={activeSegmentLine} />
+      )}
 
       <div
         className="ds-panel__body"

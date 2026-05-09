@@ -14,11 +14,15 @@ function icon(name: string): React.CSSProperties {
   return { '--icon-url': `url(${CDN}/${name}.svg)` } as React.CSSProperties;
 }
 
-export type ToolAction = 'new' | 'increment' | 'summary' | 'ack' | 'split' | 'print';
+export type ToolAction =
+  | 'new' | 'increment' | 'summary' | 'ack' | 'split' | 'print'
+  | 'copy' | 'download' | 'back-to-editor';
 
 interface ToolbarProps {
   standard: DocumentStandard;
   hasValidDocument: boolean;
+  hasContent: boolean;
+  inBusinessOrHexView: boolean;
   onFileLoad: (text: string) => void;
   onConvert: (format: 'json' | 'xml') => void;
   onClear: () => void;
@@ -44,6 +48,8 @@ async function readClipboard(): Promise<string | null> {
 export function Toolbar({
   standard,
   hasValidDocument,
+  hasContent,
+  inBusinessOrHexView,
   onFileLoad,
   onConvert,
   onClear,
@@ -176,6 +182,30 @@ export function Toolbar({
         <button
           type="button"
           className="ds-toolbar__btn"
+          onClick={() => onTool('copy')}
+          disabled={!hasContent}
+          aria-label="Copy raw EDI to clipboard"
+          title="Copy raw EDI to clipboard"
+        >
+          <span className="ds-toolbar__icon" aria-hidden="true" style={icon('copy')} />
+          Copy
+        </button>
+
+        <button
+          type="button"
+          className="ds-toolbar__btn"
+          onClick={() => onTool('download')}
+          disabled={!hasContent}
+          aria-label="Download as .edi"
+          title="Download raw EDI as a file"
+        >
+          <span className="ds-toolbar__icon" aria-hidden="true" style={icon('download')} />
+          Download
+        </button>
+
+        <button
+          type="button"
+          className="ds-toolbar__btn"
           onClick={onClear}
           disabled={!hasValidDocument}
           aria-label="Clear document"
@@ -184,6 +214,19 @@ export function Toolbar({
           <span className="ds-toolbar__icon" aria-hidden="true" style={icon('trash-2')} />
           Clear
         </button>
+
+        {inBusinessOrHexView && (
+          <button
+            type="button"
+            className="ds-toolbar__btn"
+            onClick={() => onTool('back-to-editor')}
+            aria-label="Back to raw editor"
+            title="Switch back to the Raw editor view"
+          >
+            <span className="ds-toolbar__icon" aria-hidden="true" style={icon('arrow-left')} />
+            Back to Editor
+          </button>
+        )}
 
         <span className="ds-toolbar__sep" role="separator" aria-orientation="vertical" />
 

@@ -1,5 +1,6 @@
 import type { TxnBlock } from './BusinessView';
-import { formatDate, formatAmount, collectN1Loops, renderParty } from './helpers';
+import { formatDate, formatAmount, collectN1Loops, renderParty, statusPillFor } from './helpers';
+import { ErrorPanel } from './ErrorPanel';
 
 interface InvoiceLine {
   line: string;
@@ -53,13 +54,19 @@ export function renderX12_810(block: TxnBlock) {
     return formatAmount((n / 100).toString());
   }
 
+  const status = statusPillFor('810', segs);
+
   return (
     <>
       <header className="ds-bv-doc__header">
         <div>
-          <h1 className="ds-bv-doc__title">Invoice</h1>
+          <div className="ds-bv-doc__titlerow">
+            <h1 className="ds-bv-doc__title">Invoice</h1>
+            {status && <span className={`ds-bv-status ds-bv-status--${status.tone}`}>{status.label}</span>}
+          </div>
           <div className="ds-bv-doc__subtitle">
             X12 810 · {block.context.sender ?? '—'} → {block.context.receiver ?? '—'}
+            {block.context.interchangeControl && <> · ICN <span className="ds-bv-mono">{block.context.interchangeControl}</span></>}
           </div>
         </div>
         <div className="ds-bv-doc__meta">
@@ -70,6 +77,10 @@ export function renderX12_810(block: TxnBlock) {
           {cur && <div><span className="ds-bv-meta-label">Currency</span><span className="ds-bv-meta-value">{cur.elements[1]?.trim()}</span></div>}
         </div>
       </header>
+
+      {block.errors.length > 0 && (
+        <ErrorPanel errors={block.errors} onSelect={block.onErrorClick} />
+      )}
 
       {parties.length > 0 && (
         <section className="ds-bv-section">
