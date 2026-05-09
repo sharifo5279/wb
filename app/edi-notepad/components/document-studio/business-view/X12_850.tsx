@@ -101,7 +101,7 @@ export function renderX12_850(block: TxnBlock) {
         </div>
       </header>
 
-      {block.errors.length > 0 && (
+      {block.showErrors !== false && block.errors.length > 0 && (
         <ErrorPanel
           errors={block.errors}
           envelopeLabel={block.context.sender && block.context.receiver ? `${block.context.sender} → ${block.context.receiver}` : undefined}
@@ -159,8 +159,9 @@ export function renderX12_850(block: TxnBlock) {
                 const p = parseFloat(it.unitPrice);
                 const line = !Number.isNaN(q) && !Number.isNaN(p) ? (q * p) : null;
                 const malformed = !it.productId || it.qty === '' || Number.isNaN(p);
+                const warnRow = malformed && block.showErrors !== false;
                 return (
-                  <tr key={i} className={malformed ? 'ds-bv-row--warn' : undefined}>
+                  <tr key={i} className={warnRow ? 'ds-bv-row--warn' : undefined}>
                     <td>{it.line || (i + 1).toString()}</td>
                     <td className="ds-bv-mono">
                       {it.productQual && <span className="ds-bv-pill">{it.productQual}</span>}{' '}
@@ -168,7 +169,7 @@ export function renderX12_850(block: TxnBlock) {
                     </td>
                     <td>{it.description || '—'}</td>
                     <td className="ds-bv-num">{it.qty || '—'}</td>
-                    <td>{it.uom || (malformed ? <span className="ds-bv-warn-mark" title="Missing UOM">*</span> : '')}</td>
+                    <td>{it.uom || (warnRow ? <span className="ds-bv-warn-mark" title="Missing UOM">*</span> : '')}</td>
                     <td className="ds-bv-num">{formatAmount(it.unitPrice)}</td>
                     <td className="ds-bv-num">{line !== null ? formatAmount(line.toString()) : '—'}</td>
                   </tr>

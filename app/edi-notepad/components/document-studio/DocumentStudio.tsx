@@ -12,6 +12,7 @@ import {
 } from '@/src/lib/edi/edit-helpers';
 import { Toolbar, type ToolAction } from './Toolbar';
 import type { SegmentAction } from './SegmentContextMenu';
+import { Masthead } from './Masthead';
 import { DocTabs } from './DocTabs';
 import { PanelTree } from './PanelTree';
 import { PanelEditor } from './PanelEditor';
@@ -521,6 +522,8 @@ export function DocumentStudio() {
           e.target.value = '';
         }}
       />
+
+      <Masthead />
 
       <DocTabs
         docs={docs}

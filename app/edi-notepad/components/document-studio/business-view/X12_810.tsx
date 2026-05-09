@@ -153,7 +153,7 @@ export function renderX12_810(block: TxnBlock) {
         </div>
       </header>
 
-      {block.errors.length > 0 && (
+      {block.showErrors !== false && block.errors.length > 0 && (
         <ErrorPanel errors={block.errors} onSelect={block.onErrorClick} />
       )}
 

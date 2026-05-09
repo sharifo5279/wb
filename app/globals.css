@@ -24,6 +24,17 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* Modern IDE typography baseline. var() falls through to a system stack
+   * if next/font hasn't loaded yet so first-paint is never broken. */
+  font-family: var(--wb-font-ui-loaded), 'Inter', system-ui, -apple-system,
+               'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--wb-text-primary);
+  background: var(--wb-bg-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* ─── Workbench design tokens ────────────────────────────────────────────── */
@@ -335,6 +346,104 @@ body {
   flex-direction: column;
   overflow: hidden;
   position: relative;
+}
+
+/* ── Masthead ──────────────────────────────────────────────────────────────
+ * Top branding strip. Always visible; carries the product wordmark on the
+ * left and the OpenText partner mark on the right. Crisp & narrow so it
+ * doesn't eat editor real-estate on small viewports. */
+.ds-masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+  padding: 0 16px;
+  background: var(--wb-bg-primary);
+  border-bottom: 1px solid var(--wb-border);
+  flex-shrink: 0;
+  font-family: var(--wb-font-ui);
+  user-select: none;
+}
+
+.ds-masthead__product {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ds-masthead__wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--wb-text-primary);
+  font-weight: 700;
+  font-size: 14.5px;
+  letter-spacing: -0.01em;
+  transition: color 0.12s;
+}
+.ds-masthead__wordmark:hover { color: var(--wb-accent-text); }
+
+.ds-masthead__wordmark-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, var(--wb-accent), var(--wb-accent-text));
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  transform: translateY(2px);
+}
+
+.ds-masthead__wordmark-text {
+  font-family: var(--wb-font-ui);
+}
+
+.ds-masthead__sep {
+  display: inline-block;
+  width: 1px;
+  height: 16px;
+  background: var(--wb-border);
+}
+
+.ds-masthead__nav-link {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--wb-text-secondary);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: color 0.12s;
+}
+.ds-masthead__nav-link:hover { color: var(--wb-text-primary); }
+
+.ds-masthead__partner {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--wb-text-muted);
+}
+.ds-masthead__partner-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.ds-masthead__partner-mark {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  color: var(--wb-text-primary);
+}
+.ds-masthead__partner-tm {
+  display: inline-block;
+  margin-left: 1px;
+  font-size: 9px;
+  font-weight: 500;
+  vertical-align: super;
+  color: var(--wb-text-muted);
 }
 
 /* ── Toolbar ──────────────────────────────────────────────────────────────── */
@@ -2417,6 +2526,71 @@ body {
 .ds-panel__header--tabs {
   padding: 0;
   border-bottom: 1px solid var(--wb-border);
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+/* Toggle button on the panel header — sits next to the Raw/Business/Hex tabs.
+ * Hidden when there are no errors (the parent already short-circuits). */
+.ds-errors-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  margin: 4px 8px;
+  padding: 0 10px;
+  border: 1px solid var(--wb-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--wb-text-secondary);
+  font-family: var(--wb-font-ui, 'Inter', sans-serif);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.ds-errors-toggle:hover {
+  background: var(--wb-accent-tint);
+  color: var(--wb-text-primary);
+  border-color: var(--wb-accent);
+}
+.ds-errors-toggle:focus-visible {
+  outline: 2px solid var(--wb-accent);
+  outline-offset: 1px;
+}
+.ds-errors-toggle--on {
+  background: rgba(245, 166, 35, 0.10);
+  color: var(--wb-warn, #f5a623);
+  border-color: rgba(245, 166, 35, 0.45);
+}
+.ds-errors-toggle__glyph { font-size: 12px; line-height: 1; }
+.ds-errors-toggle__count {
+  display: inline-block;
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: 9px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-align: center;
+  background: var(--wb-bg-elevated);
+  color: var(--wb-text-primary);
+}
+.ds-errors-toggle--on .ds-errors-toggle__count {
+  background: rgba(245, 166, 35, 0.25);
+  color: var(--wb-warn, #f5a623);
+}
+
+/* Error panel above the Raw editor — uses the existing .ds-bv-errors styles
+ * but constrains the width and removes the BV side margins. */
+.ds-raw-errors {
+  border-bottom: 1px solid var(--wb-border);
+  background: var(--wb-bg-surface);
+  max-height: 32vh;
+  overflow-y: auto;
+}
+.ds-raw-errors .ds-bv-errors {
+  margin: 12px 14px;
 }
 
 .ds-view-tabs {
